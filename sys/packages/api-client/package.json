@@ -1,0 +1,19 @@
+{
+  "name": "@learn-claude-code/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "@learn-claude-code/shared-types": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}

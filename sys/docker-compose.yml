@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: lcc-db
+    environment:
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev_password
+      POSTGRES_DB: learn_claude_code
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_lcc:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev -d learn_claude_code"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - lcc-network
+
+  adminer:
+    image: adminer:latest
+    container_name: lcc-adminer
+    ports:
+      - "5050:8080"
+    depends_on:
+      - postgres
+    networks:
+      - lcc-network
+
+volumes:
+  postgres_data_lcc:
+
+networks:
+  lcc-network:
+    driver: bridge

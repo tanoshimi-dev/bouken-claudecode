@@ -1,0 +1,162 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  avatarUrl String?  @map("avatar_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  oauthAccounts OAuthAccount[]
+  progress      UserProgress[]
+  quizAttempts  UserQuizAttempt[]
+  achievements  UserAchievement[]
+  streak        UserStreak?
+
+  @@map("users")
+}
+
+model OAuthAccount {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  provider     String
+  providerId   String   @map("provider_id")
+  accessToken  String?  @map("access_token")
+  refreshToken String?  @map("refresh_token")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+  @@map("oauth_accounts")
+}
+
+model Module {
+  id               String  @id @default(cuid())
+  number           Int     @unique
+  title            String
+  description      String
+  estimatedMinutes Int     @map("estimated_minutes")
+  isPublished      Boolean @default(false) @map("is_published")
+
+  lessons  Lesson[]
+  quizzes  Quiz[]
+  progress UserProgress[]
+
+  @@map("modules")
+}
+
+model Lesson {
+  id          String  @id @default(cuid())
+  moduleId    String  @map("module_id")
+  order       Int
+  title       String
+  contentMd   String  @map("content_md")
+  lessonType  String  @default("tutorial") @map("lesson_type")
+  isPublished Boolean @default(false) @map("is_published")
+
+  module   Module         @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progress UserProgress[]
+
+  @@unique([moduleId, order])
+  @@map("lessons")
+}
+
+model Quiz {
+  id         String @id @default(cuid())
+  moduleId   String @map("module_id")
+  title      String
+  difficulty String @default("medium")
+  points     Int
+
+  module    Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  questions QuizQuestion[]
+  attempts  UserQuizAttempt[]
+
+  @@map("quizzes")
+}
+
+model QuizQuestion {
+  id            String  @id @default(cuid())
+  quizId        String  @map("quiz_id")
+  questionType  String  @map("question_type")
+  questionText  String  @map("question_text")
+  codeSnippet   String? @map("code_snippet")
+  options       Json
+  correctAnswer Json    @map("correct_answer")
+  explanation   String
+  order         Int
+
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@unique([quizId, order])
+  @@map("quiz_questions")
+}
+
+model UserProgress {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  moduleId    String    @map("module_id")
+  lessonId    String?   @map("lesson_id")
+  status      String    @default("not_started")
+  completedAt DateTime? @map("completed_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module Module  @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  lesson Lesson? @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId, lessonId])
+  @@map("user_progress")
+}
+
+model UserQuizAttempt {
+  id               String   @id @default(cuid())
+  userId           String   @map("user_id")
+  quizId           String   @map("quiz_id")
+  score            Int
+  maxScore         Int      @map("max_score")
+  answers          Json
+  completedAt      DateTime @default(now()) @map("completed_at")
+  timeSpentSeconds Int      @map("time_spent_seconds")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@map("user_quiz_attempts")
+}
+
+model UserAchievement {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  badgeSlug String   @map("badge_slug")
+  earnedAt  DateTime @default(now()) @map("earned_at")
+  metadata  Json?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeSlug])
+  @@map("user_achievements")
+}
+
+model UserStreak {
+  id               String    @id @default(cuid())
+  userId           String    @unique @map("user_id")
+  currentStreak    Int       @default(0) @map("current_streak")
+  longestStreak    Int       @default(0) @map("longest_streak")
+  lastActivityDate DateTime? @map("last_activity_date") @db.Date
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_streaks")
+}

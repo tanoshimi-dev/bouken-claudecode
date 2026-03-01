@@ -1,0 +1,125 @@
+import { Hono } from 'hono';
+import { setCookie, deleteCookie, getCookie } from 'hono/cookie';
+import { authMiddleware } from '../middleware/auth.js';
+import { AuthService } from '../services/auth.service.js';
+import { AppError } from '../middleware/error-handler.js';
+import { env } from '../lib/env.js';
+
+export const authRoutes = new Hono();
+
+const authService = new AuthService();
+
+// --- Specific routes MUST come before /:provider wildcard ---
+
+// Get current user
+authRoutes.get('/me', authMiddleware, async (c) => {
+  const user = c.get('user');
+  const profile = await authService.getUserProfile(user.id);
+  return c.json({ data: profile });
+});
+
+// Refresh token
+authRoutes.post('/refresh', async (c) => {
+  const refreshToken = getCookie(c, 'refresh_token');
+
+  if (!refreshToken) {
+    throw new AppError(401, 'Refresh token is required');
+  }
+
+  const { accessToken, refreshToken: newRefreshToken } =
+    await authService.refreshTokens(refreshToken);
+
+  setCookie(c, 'access_token', accessToken, {
+    httpOnly: true,
+    secure: env.NODE_ENV === 'production',
+    sameSite: 'Lax',
+    path: '/',
+    maxAge: 60 * 15,
+  });
+
+  setCookie(c, 'refresh_token', newRefreshToken, {
+    httpOnly: true,
+    secure: env.NODE_ENV === 'production',
+    sameSite: 'Lax',
+    path: '/api/auth',
+    maxAge: 60 * 60 * 24 * 7,
+  });
+
+  return c.json({ message: 'Token refreshed' });
+});
+
+// Logout
+authRoutes.post('/logout', async (c) => {
+  deleteCookie(c, 'access_token', { path: '/' });
+  deleteCookie(c, 'refresh_token', { path: '/api/auth' });
+  return c.json({ message: 'Logged out' });
+});
+
+// --- Wildcard OAuth routes ---
+
+// OAuth start — generate state/verifier, store in cookies, redirect to provider
+authRoutes.get('/:provider', async (c) => {
+  const provider = c.req.param('provider');
+  const { url, state, codeVerifier } = authService.createAuthorizationUrl(provider);
+
+  const cookieOptions = {
+    httpOnly: true,
+    secure: env.NODE_ENV === 'production',
+    sameSite: 'Lax' as const,
+    path: '/',
+    maxAge: 60 * 10,
+  };
+
+  setCookie(c, 'oauth_state', state, cookieOptions);
+
+  if (codeVerifier) {
+    setCookie(c, 'oauth_code_verifier', codeVerifier, cookieOptions);
+  }
+
+  return c.redirect(url);
+});
+
+// OAuth callback — verify state, exchange code for JWT
+authRoutes.get('/:provider/callback', async (c) => {
+  const provider = c.req.param('provider');
+  const code = c.req.query('code');
+  const stateParam = c.req.query('state');
+
+  if (!code) {
+    throw new AppError(400, 'Authorization code is required');
+  }
+
+  const storedState = getCookie(c, 'oauth_state');
+  if (!storedState || storedState !== stateParam) {
+    throw new AppError(400, 'Invalid OAuth state');
+  }
+
+  const codeVerifier = getCookie(c, 'oauth_code_verifier') ?? undefined;
+
+  deleteCookie(c, 'oauth_state', { path: '/' });
+  deleteCookie(c, 'oauth_code_verifier', { path: '/' });
+
+  const { accessToken, refreshToken } = await authService.handleCallback(
+    provider,
+    code,
+    codeVerifier,
+  );
+
+  setCookie(c, 'access_token', accessToken, {
+    httpOnly: true,
+    secure: env.NODE_ENV === 'production',
+    sameSite: 'Lax',
+    path: '/',
+    maxAge: 60 * 15,
+  });
+
+  setCookie(c, 'refresh_token', refreshToken, {
+    httpOnly: true,
+    secure: env.NODE_ENV === 'production',
+    sameSite: 'Lax',
+    path: '/api/auth',
+    maxAge: 60 * 60 * 24 * 7,
+  });
+
+  return c.redirect(`${env.APP_URL}/dashboard`);
+});
