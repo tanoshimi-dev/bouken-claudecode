@@ -1,5 +1,7 @@
 'use client';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
 const providers = [
   { id: 'google', label: 'Google', icon: '🔵' },
   { id: 'github', label: 'GitHub', icon: '⚫' },
@@ -7,8 +9,8 @@ const providers = [
 
 export function LoginForm() {
   const handleLogin = (provider: string) => {
-    // Goes through Next.js rewrite → backend API
-    window.location.href = `/api/auth/${provider}`;
+    // Direct navigation to backend OAuth endpoint
+    window.location.href = `${API_URL}/api/auth/${provider}`;
   };
 
   return (

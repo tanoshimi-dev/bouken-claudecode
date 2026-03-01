@@ -1,6 +1,6 @@
 import { createApiClient } from '@learn-claude-code/api-client';
 
-// Use same origin — Next.js rewrites /api/* to the backend
+// Direct API calls to the backend (Approach A)
 export const apiClient = createApiClient({
-  baseUrl: '',
+  baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000',
 });

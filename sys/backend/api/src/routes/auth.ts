@@ -9,6 +9,16 @@ export const authRoutes = new Hono();
 
 const authService = new AuthService();
 
+/** Cookie options shared across all auth cookies */
+function cookieDefaults() {
+  return {
+    httpOnly: true,
+    secure: env.NODE_ENV === 'production',
+    sameSite: 'Lax' as const,
+    ...(env.COOKIE_DOMAIN ? { domain: env.COOKIE_DOMAIN } : {}),
+  };
+}
+
 // --- Specific routes MUST come before /:provider wildcard ---
 
 // Get current user
@@ -30,17 +40,13 @@ authRoutes.post('/refresh', async (c) => {
     await authService.refreshTokens(refreshToken);
 
   setCookie(c, 'access_token', accessToken, {
-    httpOnly: true,
-    secure: env.NODE_ENV === 'production',
-    sameSite: 'Lax',
+    ...cookieDefaults(),
     path: '/',
     maxAge: 60 * 15,
   });
 
   setCookie(c, 'refresh_token', newRefreshToken, {
-    httpOnly: true,
-    secure: env.NODE_ENV === 'production',
-    sameSite: 'Lax',
+    ...cookieDefaults(),
     path: '/api/auth',
     maxAge: 60 * 60 * 24 * 7,
   });
@@ -63,9 +69,7 @@ authRoutes.get('/:provider', async (c) => {
   const { url, state, codeVerifier } = authService.createAuthorizationUrl(provider);
 
   const cookieOptions = {
-    httpOnly: true,
-    secure: env.NODE_ENV === 'production',
-    sameSite: 'Lax' as const,
+    ...cookieDefaults(),
     path: '/',
     maxAge: 60 * 10,
   };
@@ -106,17 +110,13 @@ authRoutes.get('/:provider/callback', async (c) => {
   );
 
   setCookie(c, 'access_token', accessToken, {
-    httpOnly: true,
-    secure: env.NODE_ENV === 'production',
-    sameSite: 'Lax',
+    ...cookieDefaults(),
     path: '/',
     maxAge: 60 * 15,
   });
 
   setCookie(c, 'refresh_token', refreshToken, {
-    httpOnly: true,
-    secure: env.NODE_ENV === 'production',
-    sameSite: 'Lax',
+    ...cookieDefaults(),
     path: '/api/auth',
     maxAge: 60 * 60 * 24 * 7,
   });
