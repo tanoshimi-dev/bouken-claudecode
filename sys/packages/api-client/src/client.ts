@@ -8,6 +8,9 @@ import type {
   QuizResult,
   OverallProgress,
   StreakInfo,
+  PlaygroundSnippet,
+  CreateSnippetInput,
+  PlaygroundTemplate,
 } from '@learn-claude-code/shared-types';
 
 export interface ApiClientConfig {
@@ -101,6 +104,27 @@ export class ApiClient {
 
   async getStreaks(): Promise<ApiResponse<StreakInfo>> {
     return this.request('/api/progress/streaks');
+  }
+
+  // Playground
+  async getSnippets(type?: string): Promise<ApiResponse<PlaygroundSnippet[]>> {
+    const query = type ? `?type=${encodeURIComponent(type)}` : '';
+    return this.request(`/api/playground/snippets${query}`);
+  }
+
+  async createSnippet(body: CreateSnippetInput): Promise<ApiResponse<PlaygroundSnippet>> {
+    return this.request('/api/playground/snippets', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  }
+
+  async deleteSnippet(id: string): Promise<ApiResponse<{ message: string }>> {
+    return this.request(`/api/playground/snippets/${id}`, { method: 'DELETE' });
+  }
+
+  async getPlaygroundTemplates(): Promise<ApiResponse<PlaygroundTemplate[]>> {
+    return this.request('/api/playground/templates');
   }
 }
 

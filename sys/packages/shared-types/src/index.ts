@@ -9,3 +9,9 @@ export type {
 } from './quiz';
 export type { UserProgress, OverallProgress, ModuleProgress, StreakInfo } from './progress';
 export type { ApiResponse, PaginatedResponse } from './common';
+export type {
+  SnippetType,
+  PlaygroundSnippet,
+  CreateSnippetInput,
+  PlaygroundTemplate,
+} from './playground';

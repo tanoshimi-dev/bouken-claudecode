@@ -5,6 +5,7 @@ import { authRoutes } from './routes/auth.js';
 import { moduleRoutes } from './routes/modules.js';
 import { quizRoutes } from './routes/quizzes.js';
 import { progressRoutes } from './routes/progress.js';
+import { playgroundRoutes } from './routes/playground.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { env } from './lib/env.js';
 
@@ -29,5 +30,6 @@ app.route('/auth', authRoutes);
 app.route('/modules', moduleRoutes);
 app.route('/quizzes', quizRoutes);
 app.route('/progress', progressRoutes);
+app.route('/playground', playgroundRoutes);
 
 export default app;

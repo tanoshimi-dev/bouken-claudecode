@@ -15,11 +15,12 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  oauthAccounts OAuthAccount[]
-  progress      UserProgress[]
-  quizAttempts  UserQuizAttempt[]
-  achievements  UserAchievement[]
-  streak        UserStreak?
+  oauthAccounts      OAuthAccount[]
+  progress           UserProgress[]
+  quizAttempts       UserQuizAttempt[]
+  achievements       UserAchievement[]
+  streak             UserStreak?
+  playgroundSnippets PlaygroundSnippet[]
 
   @@map("users")
 }
@@ -159,4 +160,19 @@ model UserStreak {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_streaks")
+}
+
+model PlaygroundSnippet {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  title     String
+  type      String   // 'terminal' | 'claude_md' | 'hook_config'
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@map("playground_snippets")
 }

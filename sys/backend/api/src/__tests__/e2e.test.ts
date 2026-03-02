@@ -242,3 +242,87 @@ describe('E2E: 学習フロー', () => {
     expect(body.message).toBe('Logged out');
   });
 });
+
+describe('E2E: Playground', () => {
+  let ctx: TestContext;
+  let snippetId: string;
+
+  beforeAll(async () => {
+    ctx = await createTestUser();
+  });
+
+  afterAll(async () => {
+    await cleanupTestUser(ctx.userId);
+  });
+
+  // 1. Get templates
+  it('GET /api/playground/templates → 200, returns templates', async () => {
+    const res = await authRequest('GET', '/api/playground/templates', ctx.accessToken);
+    expect(res.status).toBe(200);
+
+    const { data } = await res.json();
+    expect(Array.isArray(data)).toBe(true);
+    expect(data.length).toBeGreaterThanOrEqual(3);
+    expect(data[0]).toHaveProperty('id');
+    expect(data[0]).toHaveProperty('name');
+    expect(data[0]).toHaveProperty('content');
+    expect(data[0]).toHaveProperty('type');
+  });
+
+  // 2. Create snippet
+  it('POST /api/playground/snippets → 201, creates snippet', async () => {
+    const res = await authRequest('POST', '/api/playground/snippets', ctx.accessToken, {
+      title: 'テストスニペット',
+      type: 'claude_md',
+      content: '# Test CLAUDE.md\n\n## Memory\n- テスト',
+    });
+    expect(res.status).toBe(201);
+
+    const { data } = await res.json();
+    expect(data).toHaveProperty('id');
+    expect(data.title).toBe('テストスニペット');
+    expect(data.type).toBe('claude_md');
+    expect(data.content).toContain('# Test CLAUDE.md');
+    snippetId = data.id;
+  });
+
+  // 3. List snippets
+  it('GET /api/playground/snippets → 200, returns user snippets', async () => {
+    const res = await authRequest('GET', '/api/playground/snippets', ctx.accessToken);
+    expect(res.status).toBe(200);
+
+    const { data } = await res.json();
+    expect(Array.isArray(data)).toBe(true);
+    expect(data.length).toBeGreaterThanOrEqual(1);
+  });
+
+  // 4. Filter snippets by type
+  it('GET /api/playground/snippets?type=claude_md → filtered', async () => {
+    const res = await authRequest(
+      'GET',
+      '/api/playground/snippets?type=claude_md',
+      ctx.accessToken,
+    );
+    expect(res.status).toBe(200);
+
+    const { data } = await res.json();
+    expect(Array.isArray(data)).toBe(true);
+    expect(data.every((s: { type: string }) => s.type === 'claude_md')).toBe(true);
+  });
+
+  // 5. Delete snippet
+  it('DELETE /api/playground/snippets/:id → 200', async () => {
+    const res = await authRequest(
+      'DELETE',
+      `/api/playground/snippets/${snippetId}`,
+      ctx.accessToken,
+    );
+    expect(res.status).toBe(200);
+  });
+
+  // 6. Unauthenticated access
+  it('GET /api/playground/snippets (no auth) → 401', async () => {
+    const res = await app.request('/api/playground/snippets');
+    expect(res.status).toBe(401);
+  });
+});
