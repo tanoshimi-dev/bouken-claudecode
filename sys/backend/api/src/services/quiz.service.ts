@@ -74,7 +74,7 @@ export class QuizService {
     // Grade each question
     const results = quiz.questions.map((question) => {
       const userAnswer = answers.find((a) => a.questionId === question.id);
-      const correct = this.checkAnswer(question.correctAnswer, userAnswer?.answer);
+      const correct = this.checkAnswer(question.correctAnswer, userAnswer?.answer, question.questionType);
 
       return {
         questionId: question.id,
@@ -111,7 +111,12 @@ export class QuizService {
     };
   }
 
-  private checkAnswer(correctAnswer: unknown, userAnswer: unknown): boolean {
+  private checkAnswer(correctAnswer: unknown, userAnswer: unknown, questionType?: string): boolean {
+    if (questionType === 'code_completion') {
+      const correct = String(correctAnswer).trim().toLowerCase();
+      const user = String(userAnswer ?? '').trim().toLowerCase();
+      return correct === user;
+    }
     return JSON.stringify(correctAnswer) === JSON.stringify(userAnswer);
   }
 }

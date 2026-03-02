@@ -100,10 +100,18 @@ export function QuizResultsContent({
                 <p className="mb-2 text-sm">{question.questionText}</p>
               )}
 
-              <p className="text-muted-foreground text-sm">
+              <div className="text-muted-foreground text-sm">
                 <span className="font-medium">正解:</span>{' '}
-                {String(r.correctAnswer)}
-              </p>
+                {Array.isArray(r.correctAnswer) ? (
+                  <ol className="mt-1 ml-4 list-decimal space-y-0.5">
+                    {(r.correctAnswer as string[]).map((item, i) => (
+                      <li key={i}>{item}</li>
+                    ))}
+                  </ol>
+                ) : (
+                  <span>{String(r.correctAnswer)}</span>
+                )}
+              </div>
 
               <div className="bg-muted/50 mt-2 rounded-lg p-3">
                 <p className="text-sm">

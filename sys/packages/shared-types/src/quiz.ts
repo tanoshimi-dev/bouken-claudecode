@@ -8,7 +8,7 @@ export interface Quiz {
 
 export interface QuizQuestion {
   id: string;
-  questionType: 'multiple_choice' | 'code_completion' | 'true_false' | 'ordering';
+  questionType: 'multiple_choice' | 'code_completion' | 'true_false' | 'ordering' | 'scenario';
   questionText: string;
   codeSnippet: string | null;
   options: unknown;

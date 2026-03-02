@@ -1,0 +1,81 @@
+{
+  "title": "Hooksクイズ",
+  "difficulty": "hard",
+  "points": 250,
+  "questions": [
+    {
+      "questionType": "multiple_choice",
+      "questionText": "PreToolUseフックでツールの実行をブロックするには、フックコマンドをどのように終了させる必要がありますか？",
+      "options": [
+        "終了コード1など、0以外の値で終了させる",
+        "終了コード0で終了させる",
+        "標準エラー出力に何も書かずに終了させる",
+        "標準出力に 'BLOCK' という文字列を出力する"
+      ],
+      "correctAnswer": "終了コード1など、0以外の値で終了させる",
+      "explanation": "PreToolUseフックのコマンドが終了コード0以外で終了すると、Claude Codeはツールの実行をブロックします。標準出力に書き込んだ内容がブロック理由としてClaude Codeに伝わります。終了コード0の場合はブロックされずにツールが実行されます。"
+    },
+    {
+      "questionType": "multiple_choice",
+      "questionText": "Hooksの設定ファイルはどこに配置しますか？",
+      "options": [
+        ".claude/settings.json",
+        "CLAUDE.md",
+        ".clauderc",
+        "claude.config.json"
+      ],
+      "correctAnswer": ".claude/settings.json",
+      "explanation": "Claude CodeのHooks設定は `.claude/settings.json` ファイルの `hooks` キーに記述します。プロジェクト固有の設定はプロジェクトルートの `.claude/settings.json` に、グローバル設定は `~/.claude/settings.json` に記述します。"
+    },
+    {
+      "questionType": "true_false",
+      "questionText": "PostToolUseフックは、ツールの実行結果を受け取ることができるが、そのツールの実行をブロック（中止）することはできない。",
+      "options": [
+        "正しい",
+        "誤り"
+      ],
+      "correctAnswer": "正しい",
+      "explanation": "PostToolUseフックはツールが実行された後に呼び出されるため、すでに実行が完了しているツールをブロックすることはできません。ブロック機能はPreToolUseフック（実行前）にのみ備わっています。PostToolUseはリンターの実行や自動フォーマットなど、実行後の後処理に使用します。"
+    },
+    {
+      "questionType": "code_completion",
+      "questionText": "Claude Codeがツールを呼び出す直前に実行されるフックイベントの名前を答えてください。このフックはツールの実行をブロックする能力を持っています。",
+      "codeSnippet": "{\n  \"hooks\": {\n    \"________\": [\n      {\n        \"matcher\": \"Write\",\n        \"hooks\": [\n          {\n            \"type\": \"command\",\n            \"command\": \"bash ./check-file.sh\"\n          }\n        ]\n      }\n    ]\n  }\n}",
+      "correctAnswer": "PreToolUse",
+      "explanation": "PreToolUseはツール実行前に呼び出されるイベント名です。このイベントにフックを登録することで、ツールが実行される前に任意のスクリプトを実行し、必要に応じてツールの実行をブロックすることができます。",
+      "options": []
+    },
+    {
+      "questionType": "ordering",
+      "questionText": "Claude CodeでHooksが実行されるライフサイクルを正しい順番に並べてください。",
+      "options": [
+        "PostToolUseフックが実行される",
+        "ユーザーがClaude Codeにタスクを依頼する",
+        "Stopフックが実行される",
+        "PreToolUseフックが実行される",
+        "ツール（Edit/Write/Bashなど）が実行される"
+      ],
+      "correctAnswer": [
+        "ユーザーがClaude Codeにタスクを依頼する",
+        "PreToolUseフックが実行される",
+        "ツール（Edit/Write/Bashなど）が実行される",
+        "PostToolUseフックが実行される",
+        "Stopフックが実行される"
+      ],
+      "explanation": "Hooksのライフサイクルは以下の順序で実行されます。まずユーザーがタスクを依頼し、Claude Codeがツールを呼び出そうとする直前にPreToolUseフックが実行されます。PreToolUseがブロックしなければツールが実行され、その直後にPostToolUseフックが実行されます。タスクがすべて完了してClaude Codeが停止するときに最後にStopフックが実行されます。"
+    },
+    {
+      "questionType": "scenario",
+      "questionText": "あなたはTypeScriptプロジェクトを開発しており、Claude Codeが`.ts`や`.tsx`ファイルを編集するたびに、自動的にESLintを実行して問題を検出したいと考えています。以下のうち、この要件を正しく実装した設定はどれですか？",
+      "codeSnippet": "// 要件:\n// - .ts / .tsx ファイルが編集されたとき\n// - 自動的にESLintを実行する\n// - ツールの実行後に動作する（編集をブロックしない）\n// - スクリプト: .claude/hooks/run-eslint.sh",
+      "options": [
+        "{\n  \"hooks\": {\n    \"PostToolUse\": [\n      {\n        \"matcher\": \"Edit|Write\",\n        \"hooks\": [\n          {\n            \"type\": \"command\",\n            \"command\": \"bash .claude/hooks/run-eslint.sh\"\n          }\n        ]\n      }\n    ]\n  }\n}",
+        "{\n  \"hooks\": {\n    \"PreToolUse\": [\n      {\n        \"matcher\": \"Edit|Write\",\n        \"hooks\": [\n          {\n            \"type\": \"command\",\n            \"command\": \"bash .claude/hooks/run-eslint.sh\"\n          }\n        ]\n      }\n    ]\n  }\n}",
+        "{\n  \"hooks\": {\n    \"Stop\": [\n      {\n        \"matcher\": \"Edit|Write\",\n        \"hooks\": [\n          {\n            \"type\": \"command\",\n            \"command\": \"bash .claude/hooks/run-eslint.sh\"\n          }\n        ]\n      }\n    ]\n  }\n}",
+        "{\n  \"hooks\": {\n    \"Notification\": [\n      {\n        \"matcher\": \"\",\n        \"hooks\": [\n          {\n            \"type\": \"command\",\n            \"command\": \"bash .claude/hooks/run-eslint.sh\"\n          }\n        ]\n      }\n    ]\n  }\n}"
+      ],
+      "correctAnswer": "{\n  \"hooks\": {\n    \"PostToolUse\": [\n      {\n        \"matcher\": \"Edit|Write\",\n        \"hooks\": [\n          {\n            \"type\": \"command\",\n            \"command\": \"bash .claude/hooks/run-eslint.sh\"\n          }\n        ]\n      }\n    ]\n  }\n}",
+      "explanation": "この要件には「ツールの実行後に動作する（編集をブロックしない）」という条件があるため、PostToolUseフックを使う必要があります。PreToolUseは実行前のチェックでブロックも可能なため不適切です。Stopはタスク全体の完了時であり、個々のファイル編集ごとには実行されません。matcherに「Edit|Write」を指定することで、ファイルの編集・書き込みツールが呼ばれたときのみESLintが実行されます。"
+    }
+  ]
+}

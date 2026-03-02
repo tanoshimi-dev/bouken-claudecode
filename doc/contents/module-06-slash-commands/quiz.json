@@ -1,0 +1,78 @@
+{
+  "title": "スラッシュコマンドクイズ",
+  "difficulty": "medium",
+  "points": 200,
+  "questions": [
+    {
+      "questionType": "multiple_choice",
+      "questionText": "会話履歴を完全に削除せず、要約・圧縮してコンテキストウィンドウの使用量を減らすコマンドはどれですか？",
+      "options": [
+        "/compact",
+        "/clear",
+        "/memory",
+        "/status"
+      ],
+      "correctAnswer": "/compact",
+      "explanation": "/compactは会話履歴を要約・圧縮してトークン使用量を削減します。/clearは履歴を完全に削除してしまうため、同じタスクを続けながらコンテキストを節約したいときは/compactが適切です。"
+    },
+    {
+      "questionType": "multiple_choice",
+      "questionText": "新しいプロジェクトでClaude Codeを使い始めるとき、プロジェクトを自動分析してCLAUDE.mdを生成するコマンドはどれですか？",
+      "options": [
+        "/init",
+        "/doctor",
+        "/memory",
+        "/config"
+      ],
+      "correctAnswer": "/init",
+      "explanation": "/initはプロジェクトのディレクトリ構造や設定ファイル（package.json、pyproject.tomlなど）を自動的に解析し、技術スタックやコーディング規約を含むCLAUDE.mdファイルを生成します。新しいプロジェクトを始めるときに最初に実行するコマンドです。"
+    },
+    {
+      "questionType": "true_false",
+      "questionText": "/reviewコマンドは、実行前に手動でgit diffの出力をコピーしてClaudeに貼り付ける必要がある。",
+      "options": [
+        "正しい",
+        "誤り"
+      ],
+      "correctAnswer": "誤り",
+      "explanation": "/reviewコマンドはgit diffを自動的に実行して変更内容を取得し、変更されたファイルのコンテキストも読み込んだ上でコードレビューを実施します。手動でdiffをコピー・貼り付けする必要はありません。"
+    },
+    {
+      "questionType": "code_completion",
+      "questionText": "現在のGitの変更差分に対してコードレビューを実施したいとき、入力するスラッシュコマンドを答えてください。",
+      "correctAnswer": "/review",
+      "explanation": "/reviewコマンドはgit diffを自動取得し、変更ファイルのコンテキストを読み込んでセキュリティ問題・バグ・改善提案などを含む包括的なコードレビューを実施します。",
+      "options": []
+    },
+    {
+      "questionType": "ordering",
+      "questionText": "新しいプロジェクトをクローンしてClaude Codeで開発を始める際の、推奨されるスラッシュコマンドの実行順序を正しく並べてください。",
+      "options": [
+        "/review で最初のコード変更をレビューする",
+        "/doctor で環境診断を実行して問題がないか確認する",
+        "/init でプロジェクトを分析してCLAUDE.mdを生成する",
+        "/status でセッション状態とコンテキスト使用量を確認する"
+      ],
+      "correctAnswer": [
+        "/init でプロジェクトを分析してCLAUDE.mdを生成する",
+        "/doctor で環境診断を実行して問題がないか確認する",
+        "/status でセッション状態とコンテキスト使用量を確認する",
+        "/review で最初のコード変更をレビューする"
+      ],
+      "explanation": "推奨順序は①/init（CLAUDE.mdを生成してプロジェクトコンテキストを確立）→②/doctor（環境診断で問題を早期発見）→③/status（セッション状態を把握）→④/review（実装後にコードをレビュー）です。CLAUDE.mdがない状態でレビューしても精度が低くなるため、必ず/initを最初に実行します。"
+    },
+    {
+      "questionType": "scenario",
+      "questionText": "状況に応じた最適なコマンドを選んでください。",
+      "codeSnippet": "あなたは大規模なリファクタリング作業を2時間続けています。/statusで確認したところ、コンテキスト使用量が175,000 / 200,000トークン（87.5%）になっていました。まだ同じリファクタリング作業を続ける必要があります。この状況で最も適切な対応はどれですか？",
+      "options": [
+        "/clear を実行してコンテキストを完全にリセットし、作業をゼロから再開する",
+        "/compact を実行してコンテキストを圧縮し、同じ作業を続ける",
+        "/model で軽量モデルに切り替えてコンテキスト容量を増やす",
+        "そのまま作業を続け、200,000トークンを超えてからエラーが出たら対処する"
+      ],
+      "correctAnswer": "/compact を実行してコンテキストを圧縮し、同じ作業を続ける",
+      "explanation": "同じタスクを継続中のため/clearは不適切です（作業履歴が失われる）。/compactは会話履歴を要約・圧縮するので、作業の文脈を保ちながらコンテキストを解放できます。モデルを変えてもコンテキスト容量は変わりません。限界まで使い続けるとエラーが発生する可能性があるため、事前に/compactを実行するのが最善です。"
+    }
+  ]
+}

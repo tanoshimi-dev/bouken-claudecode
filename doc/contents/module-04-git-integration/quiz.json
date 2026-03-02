@@ -1,0 +1,82 @@
+{
+  "title": "Git連携クイズ",
+  "difficulty": "medium",
+  "points": 200,
+  "questions": [
+    {
+      "questionType": "multiple_choice",
+      "questionText": "Claude CodeでConventional Commitsに従ったコミットを作成するとき、新機能の追加に使うプレフィックスはどれですか？",
+      "options": [
+        "feat:",
+        "add:",
+        "new:",
+        "feature:"
+      ],
+      "correctAnswer": "feat:",
+      "explanation": "Conventional Commitsでは、新機能の追加には「feat:」プレフィックスを使います。その他の代表的なプレフィックスには「fix:」（バグ修正）、「docs:」（ドキュメント）、「refactor:」（リファクタリング）などがあります。Claude Codeは変更内容を分析して適切なプレフィックスを選んでコミットメッセージを生成します。"
+    },
+    {
+      "questionType": "multiple_choice",
+      "questionText": "Claude Codeでプルリクエストを作成するとき、使用するCLIツールはどれですか？",
+      "options": [
+        "gh（GitHub CLI）",
+        "git pr",
+        "hub",
+        "git request-pull"
+      ],
+      "correctAnswer": "gh（GitHub CLI）",
+      "explanation": "Claude CodeはGitHub CLI（ghコマンド）を使ってプルリクエストの作成・管理・レビューを行います。「gh pr create」でPRを作成し、「gh pr review」でレビューを行います。git自体にはPR機能がなく、hubはサードパーティのラッパーです。"
+    },
+    {
+      "questionType": "true_false",
+      "questionText": "Claude Codeはマージコンフリクトが発生したファイルを分析し、両方の変更内容を理解した上で適切な解消案を提案できる。",
+      "options": [
+        "正しい",
+        "誤り"
+      ],
+      "correctAnswer": "正しい",
+      "explanation": "Claude Codeはコンフリクトが発生したファイルを読み込み、HEADとマージするブランチの両方の変更意図を理解した上で、機能を壊さない最適な解消案を提案・適用できます。これにより、手動でのコンフリクト解消に比べて大幅に時間を短縮できます。"
+    },
+    {
+      "questionType": "code_completion",
+      "questionText": "ローカルのfeature/loginブランチをリモートリポジトリに初めてプッシュするとき、上流（upstream）ブランチを設定しながらプッシュするコマンドの空欄を埋めてください。\n\n`git push ___ origin feature/login`",
+      "correctAnswer": "-u",
+      "explanation": "「git push -u origin feature/login」の「-u」（または「--set-upstream」）オプションを指定すると、リモートの同名ブランチを上流ブランチとして設定します。以降は「git push」だけでプッシュできるようになります。Claude Codeに「リモートにプッシュして」と指示すると、このコマンドを自動的に実行します。",
+      "options": []
+    },
+    {
+      "questionType": "ordering",
+      "questionText": "Git Flowに基づいた機能開発の標準的な手順を正しい順番に並べてください。",
+      "options": [
+        "PRを作成してレビューを依頼する",
+        "developブランチから機能ブランチを作成する",
+        "マージ後に機能ブランチを削除する",
+        "機能を実装してコミットする",
+        "レビューの指摘を修正して承認を得る",
+        "developブランチにマージする"
+      ],
+      "correctAnswer": [
+        "developブランチから機能ブランチを作成する",
+        "機能を実装してコミットする",
+        "PRを作成してレビューを依頼する",
+        "レビューの指摘を修正して承認を得る",
+        "developブランチにマージする",
+        "マージ後に機能ブランチを削除する"
+      ],
+      "explanation": "Git Flowでは、developブランチから機能ブランチを切り出し、実装とコミットを行ってからPRを作成します。レビューを受けて修正・承認を経た後にdevelopへマージし、不要になった機能ブランチを削除するのが標準的なフローです。"
+    },
+    {
+      "questionType": "scenario",
+      "questionText": "以下の状況でどのように対処すべきですか？",
+      "codeSnippet": "あなたはfeature/payment-integrationブランチで1週間作業し、mainブランチにマージしようとしました。しかし「CONFLICT (content): Merge conflict in src/api/payment.ts」というエラーが表示されました。同僚がmainブランチで同じファイルを修正していたためです。Claude Codeへの最善の指示はどれですか？",
+      "options": [
+        "git merge --abort を実行してマージを中断し、手動でコンフリクトを解消してから再度マージする",
+        "コンフリクトが発生したファイルの変更内容と意図を確認して、両方の変更を統合する形でコンフリクトを解消してとClaude Codeに依頼する",
+        "git checkout -- src/api/payment.ts を実行して自分の変更を破棄し、mainの変更を優先する",
+        "コンフリクトを無視してgit add と git commit を実行して強制的にマージを完了する"
+      ],
+      "correctAnswer": "コンフリクトが発生したファイルの変更内容と意図を確認して、両方の変更を統合する形でコンフリクトを解消してとClaude Codeに依頼する",
+      "explanation": "マージコンフリクトの解消では、両方の変更を理解した上で統合することが重要です。Claude Codeに依頼すると、HEADとマージブランチの変更内容を分析し、機能を壊さずに両方の変更を取り込む最適な解決策を提案してくれます。自分の変更だけを破棄したり、強制的にマージしたりすると、どちらかの機能が失われる可能性があります。"
+    }
+  ]
+}
