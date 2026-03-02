@@ -1,4 +1,4 @@
-export type { User, UserProfile } from './user';
+export type { User, UserProfile, LinkedAccount, OAuthProvider } from './user';
 export type { Module, ModuleWithProgress, ModuleDetail, Lesson, LessonDetail } from './module';
 export type {
   Quiz,

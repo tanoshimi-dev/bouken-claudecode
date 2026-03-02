@@ -7,6 +7,7 @@ const navItems = [
   { href: '/dashboard', label: 'ダッシュボード' },
   { href: '/modules', label: 'モジュール' },
   { href: '/profile', label: 'プロフィール' },
+  { href: '/profile/settings', label: '設定' },
 ];
 
 export function Sidebar() {

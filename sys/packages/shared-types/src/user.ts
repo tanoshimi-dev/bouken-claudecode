@@ -6,6 +6,14 @@ export interface User {
   createdAt: string;
 }
 
+export interface LinkedAccount {
+  provider: string;
+  linkedAt: string;
+}
+
 export interface UserProfile extends User {
   providers: string[];
+  linkedAccounts: LinkedAccount[];
 }
+
+export type OAuthProvider = 'google' | 'github' | 'microsoft' | 'apple' | 'line';

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useApi } from '@/hooks/useApi';
 import { apiClient } from '@/lib/api';
@@ -58,12 +59,20 @@ export function ProfileContent() {
                 )}
               </div>
 
-              <button
-                onClick={logout}
-                className="hover:bg-destructive/10 text-destructive mt-2 rounded-lg border border-current px-4 py-2 text-sm font-medium transition-colors"
-              >
-                ログアウト
-              </button>
+              <div className="mt-2 flex gap-2">
+                <Link
+                  href="/profile/settings"
+                  className="bg-accent hover:bg-accent/80 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+                >
+                  設定
+                </Link>
+                <button
+                  onClick={logout}
+                  className="hover:bg-destructive/10 text-destructive rounded-lg border border-current px-4 py-2 text-sm font-medium transition-colors"
+                >
+                  ログアウト
+                </button>
+              </div>
             </div>
           ) : (
             <div className="bg-muted h-32 animate-pulse rounded-lg" />

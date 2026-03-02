@@ -5,6 +5,9 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 const providers = [
   { id: 'google', label: 'Google', icon: '🔵' },
   { id: 'github', label: 'GitHub', icon: '⚫' },
+  { id: 'microsoft', label: 'Microsoft', icon: '🟦' },
+  { id: 'apple', label: 'Apple', icon: '🍎' },
+  { id: 'line', label: 'LINE', icon: '🟢' },
 ] as const;
 
 export function LoginForm() {

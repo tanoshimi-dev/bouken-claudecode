@@ -58,6 +58,10 @@ export class ApiClient {
     await this.request('/api/auth/logout', { method: 'POST' });
   }
 
+  async unlinkProvider(provider: string): Promise<ApiResponse<{ message: string }>> {
+    return this.request(`/api/auth/link/${provider}`, { method: 'DELETE' });
+  }
+
   // Modules
   async getModules(): Promise<ApiResponse<ModuleWithProgress[]>> {
     return this.request('/api/modules');

@@ -205,7 +205,35 @@ describe('E2E: 学習フロー', () => {
     expect(data.results.length).toBe(questions.length);
   });
 
-  // 12. Logout
+  // 12. Unlink provider — fails when no/single provider linked
+  it('DELETE /api/auth/link/google (no provider) → 400', async () => {
+    const res = await authRequest('DELETE', '/api/auth/link/google', ctx.accessToken);
+    // Test user has no OAuth accounts, so cannot unlink (min 1 required)
+    expect(res.status).toBe(400);
+  });
+
+  // 13. Link provider start — requires auth
+  it('GET /api/auth/link/google (no auth) → 401', async () => {
+    const res = await app.request('/api/auth/link/google');
+    expect(res.status).toBe(401);
+  });
+
+  // 14. Unlink provider — requires auth
+  it('DELETE /api/auth/link/google (no auth) → 401', async () => {
+    const res = await app.request('/api/auth/link/google', { method: 'DELETE' });
+    expect(res.status).toBe(401);
+  });
+
+  // 15. User profile includes linkedAccounts
+  it('GET /api/auth/me includes linkedAccounts array', async () => {
+    const res = await authRequest('GET', '/api/auth/me', ctx.accessToken);
+    expect(res.status).toBe(200);
+
+    const { data } = await res.json();
+    expect(Array.isArray(data.linkedAccounts)).toBe(true);
+  });
+
+  // 16. Logout
   it('POST /api/auth/logout → 200', async () => {
     const res = await authRequest('POST', '/api/auth/logout', ctx.accessToken);
     expect(res.status).toBe(200);
