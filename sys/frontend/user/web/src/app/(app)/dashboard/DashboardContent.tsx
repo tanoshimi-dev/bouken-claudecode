@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useApi } from '@/hooks/useApi';
 import { useAuth } from '@/hooks/useAuth';
 import { apiClient } from '@/lib/api';
-import type { OverallProgress, StreakInfo } from '@learn-claude-code/shared-types';
+import type { OverallProgress, StreakInfo, UserAchievement } from '@learn-claude-code/shared-types';
 
 export function DashboardContent() {
   const { user } = useAuth();
@@ -13,6 +13,9 @@ export function DashboardContent() {
   );
   const { data: streaks, loading: streaksLoading } = useApi<StreakInfo>(() =>
     apiClient.getStreaks(),
+  );
+  const { data: achievements } = useApi<UserAchievement[]>(() =>
+    apiClient.getAchievements(),
   );
 
   const loading = progressLoading || streaksLoading;
@@ -99,6 +102,29 @@ export function DashboardContent() {
                 最長記録: {streaks?.longestStreak ?? 0}日
               </p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Recent Badges */}
+      {achievements && achievements.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">最近獲得したバッジ</h2>
+            <Link href="/profile" className="text-primary text-sm hover:underline">
+              すべて見る
+            </Link>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {achievements.slice(0, 3).map((a) => (
+              <div key={a.badge.slug} className="bg-card rounded-xl border p-4 text-center">
+                <div className="text-3xl">{a.badge.icon}</div>
+                <p className="mt-2 text-sm font-semibold">{a.badge.name}</p>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  {new Date(a.earnedAt).toLocaleDateString('ja-JP')}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       )}

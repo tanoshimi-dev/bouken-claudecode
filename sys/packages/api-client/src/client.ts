@@ -11,6 +11,8 @@ import type {
   PlaygroundSnippet,
   CreateSnippetInput,
   PlaygroundTemplate,
+  UserAchievement,
+  AchievementProgress,
 } from '@learn-claude-code/shared-types';
 
 export interface ApiClientConfig {
@@ -125,6 +127,15 @@ export class ApiClient {
 
   async getPlaygroundTemplates(): Promise<ApiResponse<PlaygroundTemplate[]>> {
     return this.request('/api/playground/templates');
+  }
+
+  // Achievements
+  async getAchievements(): Promise<ApiResponse<UserAchievement[]>> {
+    return this.request('/api/achievements');
+  }
+
+  async getAchievementProgress(): Promise<ApiResponse<AchievementProgress[]>> {
+    return this.request('/api/achievements/progress');
   }
 }
 

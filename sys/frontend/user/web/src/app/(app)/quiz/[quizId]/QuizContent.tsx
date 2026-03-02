@@ -4,7 +4,8 @@ import { use, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApi } from '@/hooks/useApi';
 import { apiClient } from '@/lib/api';
-import type { QuizDetail, QuizQuestion } from '@learn-claude-code/shared-types';
+import type { QuizDetail, QuizQuestion, NewAchievement } from '@learn-claude-code/shared-types';
+import { showAchievementToasts } from '@/components/achievements/AchievementToast';
 
 function QuestionCard({
   question,
@@ -83,6 +84,11 @@ export function QuizContent({ paramsPromise }: { paramsPromise: Promise<{ quizId
         })),
         timeSpentSeconds,
       });
+
+      // Show achievement toasts
+      showAchievementToasts(
+        (res.data as { newAchievements?: NewAchievement[] }).newAchievements,
+      );
 
       // Store results in sessionStorage for the results page
       sessionStorage.setItem(

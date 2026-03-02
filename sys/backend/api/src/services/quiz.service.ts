@@ -1,5 +1,8 @@
 import { prisma } from '../lib/prisma.js';
 import { AppError } from '../middleware/error-handler.js';
+import { AchievementService } from './achievement.service.js';
+
+const achievementService = new AchievementService();
 
 export class QuizService {
   async getQuizzesByModule(moduleId: string) {
@@ -96,11 +99,15 @@ export class QuizService {
       },
     });
 
+    // Check and award badges
+    const newAchievements = await achievementService.checkAndAwardBadges(userId);
+
     return {
       score,
       maxScore,
       percentage: maxScore > 0 ? Math.round((score / maxScore) * 100) : 0,
       results,
+      newAchievements,
     };
   }
 

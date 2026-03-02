@@ -15,3 +15,4 @@ export type {
   CreateSnippetInput,
   PlaygroundTemplate,
 } from './playground';
+export type { Badge, UserAchievement, AchievementProgress, NewAchievement } from './achievement';

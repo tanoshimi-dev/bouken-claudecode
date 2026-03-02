@@ -243,6 +243,108 @@ describe('E2E: 学習フロー', () => {
   });
 });
 
+describe('E2E: Achievements', () => {
+  let ctx: TestContext;
+  let lessonId: string;
+
+  beforeAll(async () => {
+    ctx = await createTestUser();
+
+    const firstModule = await prisma.module.findFirst({
+      where: { isPublished: true },
+      orderBy: { number: 'asc' },
+      include: {
+        lessons: {
+          where: { isPublished: true },
+          orderBy: { order: 'asc' },
+          take: 1,
+        },
+      },
+    });
+
+    if (!firstModule || firstModule.lessons.length === 0) {
+      throw new Error('No seeded modules/lessons found.');
+    }
+    lessonId = firstModule.lessons[0].id;
+  });
+
+  afterAll(async () => {
+    await cleanupTestUser(ctx.userId);
+  });
+
+  // 1. Get achievements (empty initially)
+  it('GET /api/achievements → 200, returns empty array', async () => {
+    const res = await authRequest('GET', '/api/achievements', ctx.accessToken);
+    expect(res.status).toBe(200);
+
+    const { data } = await res.json();
+    expect(Array.isArray(data)).toBe(true);
+    expect(data.length).toBe(0);
+  });
+
+  // 2. Get achievement progress (all badges with progress)
+  it('GET /api/achievements/progress → 200, returns all badges', async () => {
+    const res = await authRequest('GET', '/api/achievements/progress', ctx.accessToken);
+    expect(res.status).toBe(200);
+
+    const { data } = await res.json();
+    expect(Array.isArray(data)).toBe(true);
+    expect(data.length).toBeGreaterThanOrEqual(13);
+
+    const firstBadge = data[0];
+    expect(firstBadge).toHaveProperty('badge');
+    expect(firstBadge).toHaveProperty('earned');
+    expect(firstBadge).toHaveProperty('progress');
+    expect(firstBadge.badge).toHaveProperty('slug');
+    expect(firstBadge.badge).toHaveProperty('name');
+    expect(firstBadge.badge).toHaveProperty('icon');
+    expect(firstBadge.badge).toHaveProperty('category');
+  });
+
+  // 3. Complete lesson and verify newAchievements in response
+  it('POST /api/progress/lessons/:lessonId → returns newAchievements with first-lesson', async () => {
+    const res = await authRequest(
+      'POST',
+      `/api/progress/lessons/${lessonId}`,
+      ctx.accessToken,
+    );
+    expect(res.status).toBe(200);
+
+    const { data } = await res.json();
+    expect(data.lessonCompleted).toBe(true);
+    expect(Array.isArray(data.newAchievements)).toBe(true);
+    expect(data.newAchievements.length).toBeGreaterThanOrEqual(1);
+
+    const firstLessonBadge = data.newAchievements.find(
+      (a: { badge: { slug: string } }) => a.badge.slug === 'first-lesson',
+    );
+    expect(firstLessonBadge).toBeDefined();
+    expect(firstLessonBadge.badge.name).toBe('はじめの一歩');
+  });
+
+  // 4. Get achievements — should now have earned badges
+  it('GET /api/achievements → returns earned badges', async () => {
+    const res = await authRequest('GET', '/api/achievements', ctx.accessToken);
+    expect(res.status).toBe(200);
+
+    const { data } = await res.json();
+    expect(data.length).toBeGreaterThanOrEqual(1);
+    expect(data[0]).toHaveProperty('badge');
+    expect(data[0]).toHaveProperty('earnedAt');
+  });
+
+  // 5. Unauthenticated access
+  it('GET /api/achievements (no auth) → 401', async () => {
+    const res = await app.request('/api/achievements');
+    expect(res.status).toBe(401);
+  });
+
+  it('GET /api/achievements/progress (no auth) → 401', async () => {
+    const res = await app.request('/api/achievements/progress');
+    expect(res.status).toBe(401);
+  });
+});
+
 describe('E2E: Playground', () => {
   let ctx: TestContext;
   let snippetId: string;

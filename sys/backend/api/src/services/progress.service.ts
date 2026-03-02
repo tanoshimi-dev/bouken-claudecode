@@ -1,5 +1,8 @@
 import { prisma } from '../lib/prisma.js';
 import { AppError } from '../middleware/error-handler.js';
+import { AchievementService } from './achievement.service.js';
+
+const achievementService = new AchievementService();
 
 export class ProgressService {
   async getOverallProgress(userId: string) {
@@ -126,6 +129,9 @@ export class ProgressService {
     // Update streak
     await this.updateStreak(userId);
 
+    // Check and award badges
+    const newAchievements = await achievementService.checkAndAwardBadges(userId);
+
     return {
       lessonCompleted: true,
       moduleCompleted,
@@ -133,6 +139,7 @@ export class ProgressService {
         completedLessons,
         totalLessons,
       },
+      newAchievements,
     };
   }
 

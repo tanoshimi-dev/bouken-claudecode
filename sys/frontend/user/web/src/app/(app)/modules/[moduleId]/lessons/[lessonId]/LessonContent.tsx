@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useApi } from '@/hooks/useApi';
 import { apiClient } from '@/lib/api';
 import { MarkdownRenderer } from '@/components/content/MarkdownRenderer';
-import type { LessonDetail } from '@learn-claude-code/shared-types';
+import type { LessonDetail, NewAchievement } from '@learn-claude-code/shared-types';
+import { showAchievementToasts } from '@/components/achievements/AchievementToast';
 
 export function LessonContent({
   paramsPromise,
@@ -22,8 +23,11 @@ export function LessonContent({
   const handleComplete = async () => {
     setCompleting(true);
     try {
-      await apiClient.completeLesson(lessonId);
+      const res = await apiClient.completeLesson(lessonId);
       setCompleted(true);
+      showAchievementToasts(
+        (res.data as { newAchievements?: NewAchievement[] }).newAchievements,
+      );
     } catch {
       // ignore
     } finally {

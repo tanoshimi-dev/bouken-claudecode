@@ -1,6 +1,7 @@
 import { prisma } from '../lib/prisma.js';
 import { AppError } from '../middleware/error-handler.js';
 import type { PlaygroundTemplate } from '@learn-claude-code/shared-types';
+import { AchievementService } from './achievement.service.js';
 
 const MAX_SNIPPETS_PER_USER = 50;
 
@@ -94,6 +95,8 @@ const TEMPLATES: PlaygroundTemplate[] = [
   },
 ];
 
+const achievementService = new AchievementService();
+
 export class PlaygroundService {
   async getSnippets(userId: string, type?: string) {
     const where: { userId: string; type?: string } = { userId };
@@ -140,7 +143,10 @@ export class PlaygroundService {
       },
     });
 
-    return snippet;
+    // Check and award badges
+    const newAchievements = await achievementService.checkAndAwardBadges(userId);
+
+    return { ...snippet, newAchievements };
   }
 
   async deleteSnippet(userId: string, snippetId: string) {

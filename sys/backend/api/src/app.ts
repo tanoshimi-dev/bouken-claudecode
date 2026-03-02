@@ -6,6 +6,7 @@ import { moduleRoutes } from './routes/modules.js';
 import { quizRoutes } from './routes/quizzes.js';
 import { progressRoutes } from './routes/progress.js';
 import { playgroundRoutes } from './routes/playground.js';
+import { achievementRoutes } from './routes/achievements.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { env } from './lib/env.js';
 
@@ -31,5 +32,6 @@ app.route('/modules', moduleRoutes);
 app.route('/quizzes', quizRoutes);
 app.route('/progress', progressRoutes);
 app.route('/playground', playgroundRoutes);
+app.route('/achievements', achievementRoutes);
 
 export default app;

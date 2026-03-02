@@ -1,5 +1,6 @@
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
+import { Toaster } from 'sonner';
 
 export default function AppLayout({
   children,
@@ -13,6 +14,7 @@ export default function AppLayout({
         <Header />
         <main className="flex-1 p-6">{children}</main>
       </div>
+      <Toaster position="top-right" richColors />
     </div>
   );
 }

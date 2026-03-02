@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useApi } from '@/hooks/useApi';
 import { apiClient } from '@/lib/api';
 import type { OverallProgress, StreakInfo } from '@learn-claude-code/shared-types';
+import { AchievementGallery } from '@/components/achievements/AchievementGallery';
 
 export function ProfileContent() {
   const { user, logout } = useAuth();
@@ -139,6 +140,11 @@ export function ProfileContent() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Achievement Gallery */}
+      <div className="bg-card rounded-xl border p-6">
+        <AchievementGallery />
       </div>
     </div>
   );
