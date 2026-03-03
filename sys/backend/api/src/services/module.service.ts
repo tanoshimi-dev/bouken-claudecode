@@ -2,9 +2,12 @@ import { prisma } from '../lib/prisma.js';
 import { AppError } from '../middleware/error-handler.js';
 
 export class ModuleService {
-  async getAllModules(userId: string) {
+  async getAllModules(userId: string, contentType?: string) {
     const modules = await prisma.module.findMany({
-      where: { isPublished: true },
+      where: {
+        isPublished: true,
+        ...(contentType ? { contentType } : {}),
+      },
       orderBy: { number: 'asc' },
       include: {
         _count: { select: { lessons: { where: { isPublished: true } } } },
@@ -21,6 +24,7 @@ export class ModuleService {
 
       return {
         id: m.id,
+        contentType: m.contentType,
         number: m.number,
         title: m.title,
         description: m.description,
@@ -61,6 +65,7 @@ export class ModuleService {
 
     return {
       id: module.id,
+      contentType: module.contentType,
       number: module.number,
       title: module.title,
       description: module.description,
@@ -77,7 +82,7 @@ export class ModuleService {
     const lesson = await prisma.lesson.findFirst({
       where: { id: lessonId, moduleId, isPublished: true },
       include: {
-        module: { select: { id: true, number: true, title: true } },
+        module: { select: { id: true, number: true, title: true, contentType: true } },
       },
     });
 

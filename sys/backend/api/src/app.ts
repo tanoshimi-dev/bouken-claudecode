@@ -7,6 +7,7 @@ import { quizRoutes } from './routes/quizzes.js';
 import { progressRoutes } from './routes/progress.js';
 import { playgroundRoutes } from './routes/playground.js';
 import { achievementRoutes } from './routes/achievements.js';
+import { contentTypeRoutes } from './routes/content-types.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { env } from './lib/env.js';
 
@@ -28,6 +29,7 @@ app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOStri
 
 // Routes
 app.route('/auth', authRoutes);
+app.route('/content-types', contentTypeRoutes);
 app.route('/modules', moduleRoutes);
 app.route('/quizzes', quizRoutes);
 app.route('/progress', progressRoutes);

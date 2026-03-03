@@ -43,7 +43,8 @@ model OAuthAccount {
 
 model Module {
   id               String  @id @default(cuid())
-  number           Int     @unique
+  contentType      String  @default("claudecode") @map("content_type")
+  number           Int
   title            String
   description      String
   estimatedMinutes Int     @map("estimated_minutes")
@@ -53,6 +54,8 @@ model Module {
   quizzes  Quiz[]
   progress UserProgress[]
 
+  @@unique([contentType, number])
+  @@index([contentType])
   @@map("modules")
 }
 
@@ -163,16 +166,18 @@ model UserStreak {
 }
 
 model PlaygroundSnippet {
-  id        String   @id @default(cuid())
-  userId    String   @map("user_id")
-  title     String
-  type      String   // 'terminal' | 'claude_md' | 'hook_config'
-  content   String   @db.Text
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  title       String
+  type        String   // 'terminal' | 'claude_md' | 'hook_config'
+  contentType String   @default("claudecode") @map("content_type")
+  content     String   @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, type])
+  @@index([userId, contentType])
   @@map("playground_snippets")
 }

@@ -13,6 +13,7 @@ import type {
   PlaygroundTemplate,
   UserAchievement,
   AchievementProgress,
+  ContentTypeWithCount,
 } from '@learn-ai/shared-types';
 
 export interface ApiClientConfig {
@@ -67,9 +68,15 @@ export class ApiClient {
     return this.request(`/api/auth/link/${provider}`, { method: 'DELETE' });
   }
 
+  // Content Types
+  async getContentTypes(): Promise<ApiResponse<ContentTypeWithCount[]>> {
+    return this.request('/api/content-types');
+  }
+
   // Modules
-  async getModules(): Promise<ApiResponse<ModuleWithProgress[]>> {
-    return this.request('/api/modules');
+  async getModules(contentType?: string): Promise<ApiResponse<ModuleWithProgress[]>> {
+    const query = contentType ? `?contentType=${encodeURIComponent(contentType)}` : '';
+    return this.request(`/api/modules${query}`);
   }
 
   async getModule(moduleId: string): Promise<ApiResponse<ModuleDetail>> {
@@ -96,8 +103,9 @@ export class ApiClient {
   }
 
   // Progress
-  async getProgress(): Promise<ApiResponse<OverallProgress>> {
-    return this.request('/api/progress');
+  async getProgress(contentType?: string): Promise<ApiResponse<OverallProgress>> {
+    const query = contentType ? `?contentType=${encodeURIComponent(contentType)}` : '';
+    return this.request(`/api/progress${query}`);
   }
 
   async completeLesson(lessonId: string): Promise<ApiResponse<unknown>> {

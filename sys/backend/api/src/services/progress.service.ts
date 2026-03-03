@@ -5,10 +5,13 @@ import { AchievementService } from './achievement.service.js';
 const achievementService = new AchievementService();
 
 export class ProgressService {
-  async getOverallProgress(userId: string) {
+  async getOverallProgress(userId: string, contentType?: string) {
     const modules = await prisma.module.findMany({
-      where: { isPublished: true },
-      orderBy: { number: 'asc' },
+      where: {
+        isPublished: true,
+        ...(contentType ? { contentType } : {}),
+      },
+      orderBy: [{ contentType: 'asc' }, { number: 'asc' }],
       include: {
         _count: { select: { lessons: { where: { isPublished: true } } } },
         progress: {
@@ -30,6 +33,7 @@ export class ProgressService {
 
     let totalLessons = 0;
     let completedLessons = 0;
+    const ctAccum = new Map<string, { total: number; completed: number }>();
 
     const moduleProgress = modules.map((m) => {
       const total = m._count.lessons;
@@ -37,12 +41,18 @@ export class ProgressService {
       totalLessons += total;
       completedLessons += completed;
 
+      const acc = ctAccum.get(m.contentType) ?? { total: 0, completed: 0 };
+      acc.total += total;
+      acc.completed += completed;
+      ctAccum.set(m.contentType, acc);
+
       const latestQuiz = m.quizzes[0]?.attempts[0];
 
       return {
         moduleId: m.id,
         moduleNumber: m.number,
         moduleTitle: m.title,
+        contentType: m.contentType,
         totalLessons: total,
         completedLessons: completed,
         progressPercent: total > 0 ? Math.round((completed / total) * 100) : 0,
@@ -50,10 +60,18 @@ export class ProgressService {
       };
     });
 
+    const byContentType = Array.from(ctAccum.entries()).map(([ct, data]) => ({
+      contentType: ct,
+      totalLessons: data.total,
+      completedLessons: data.completed,
+      overallPercent: data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0,
+    }));
+
     return {
       totalLessons,
       completedLessons,
       overallPercent: totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0,
+      byContentType,
       modules: moduleProgress,
     };
   }

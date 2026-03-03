@@ -1,5 +1,8 @@
+import type { ContentTypeSlug } from './content-type';
+
 export interface Module {
   id: string;
+  contentType: ContentTypeSlug;
   number: number;
   title: string;
   description: string;
@@ -31,7 +34,7 @@ export interface LessonDetail {
   title: string;
   contentMd: string;
   lessonType: 'tutorial' | 'exercise' | 'sandbox';
-  module: { id: string; number: number; title: string };
+  module: { id: string; number: number; title: string; contentType: ContentTypeSlug };
   status: 'not_started' | 'in_progress' | 'completed';
   prevLesson: { id: string; title: string } | null;
   nextLesson: { id: string; title: string } | null;

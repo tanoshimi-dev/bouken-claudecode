@@ -7,7 +7,13 @@ export type {
   QuizSubmission,
   QuizResult,
 } from './quiz';
-export type { UserProgress, OverallProgress, ModuleProgress, StreakInfo } from './progress';
+export type {
+  UserProgress,
+  OverallProgress,
+  ModuleProgress,
+  ContentTypeProgress,
+  StreakInfo,
+} from './progress';
 export type { ApiResponse, PaginatedResponse } from './common';
 export type {
   SnippetType,
@@ -16,3 +22,5 @@ export type {
   PlaygroundTemplate,
 } from './playground';
 export type { Badge, UserAchievement, AchievementProgress, NewAchievement } from './achievement';
+export type { ContentTypeSlug, ContentTypeInfo, ContentTypeWithCount } from './content-type';
+export { CONTENT_TYPES, isValidContentType } from './content-type';

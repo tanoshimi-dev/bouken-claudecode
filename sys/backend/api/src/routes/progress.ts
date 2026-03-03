@@ -6,10 +6,11 @@ export const progressRoutes = new Hono();
 
 const progressService = new ProgressService();
 
-// Get user's overall progress
+// Get user's overall progress (optionally filtered by contentType)
 progressRoutes.get('/', authMiddleware, async (c) => {
-  const user = c.get('user');
-  const progress = await progressService.getOverallProgress(user.id);
+  const user = c.get('user') as { id: string };
+  const contentType = c.req.query('contentType');
+  const progress = await progressService.getOverallProgress(user.id, contentType);
   return c.json({ data: progress });
 });
 
