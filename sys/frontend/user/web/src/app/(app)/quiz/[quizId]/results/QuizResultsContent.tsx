@@ -37,8 +37,8 @@ export function QuizResultsContent({
     return (
       <div className="mx-auto max-w-2xl space-y-4 text-center">
         <p className="text-muted-foreground">クイズ結果が見つかりません</p>
-        <Link href="/modules" className="text-primary hover:underline">
-          モジュール一覧に戻る
+        <Link href="/contents" className="text-primary hover:underline">
+          ツール選択に戻る
         </Link>
       </div>
     );
@@ -132,10 +132,10 @@ export function QuizResultsContent({
           もう一度挑戦する
         </Link>
         <Link
-          href="/modules"
+          href="/contents"
           className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1 rounded-lg px-4 py-2.5 text-center text-sm font-medium transition-colors"
         >
-          モジュール一覧へ
+          ツール選択へ
         </Link>
       </div>
     </div>

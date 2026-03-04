@@ -1,5 +1,5 @@
-import { ModulesContent } from './ModulesContent';
+import { redirect } from 'next/navigation';
 
-export default function ModulesPage() {
-  return <ModulesContent />;
+export default function ModulesRedirect() {
+  redirect('/contents');
 }

@@ -1,5 +1,5 @@
-import { PlaygroundContent } from './PlaygroundContent';
+import { redirect } from 'next/navigation';
 
-export default function PlaygroundPage() {
-  return <PlaygroundContent />;
+export default function PlaygroundRedirect() {
+  redirect('/contents');
 }

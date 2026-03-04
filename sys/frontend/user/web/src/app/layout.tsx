@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Learn Claude Code',
-  description: 'Claude Codeの使い方をインタラクティブに学べる教育アプリ',
+  title: 'AI学習',
+  description: 'AIコーディングツールの使い方をインタラクティブに学べる教育アプリ',
 };
 
 export default function RootLayout({

@@ -16,10 +16,14 @@ describe('E2E: 学習フロー', () => {
     // Create test user
     ctx = await createTestUser();
 
-    // Fetch seeded modules (sorted by number) to get real IDs
+    // Fetch a seeded module that has both lessons and quizzes
     const firstModule = await prisma.module.findFirst({
-      where: { isPublished: true },
-      orderBy: { number: 'asc' },
+      where: {
+        isPublished: true,
+        quizzes: { some: {} },
+        lessons: { some: { isPublished: true } },
+      },
+      orderBy: [{ contentType: 'asc' }, { number: 'asc' }],
       include: {
         lessons: {
           where: { isPublished: true },

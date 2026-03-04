@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { useApi } from '@/hooks/useApi';
 import { useAuth } from '@/hooks/useAuth';
 import { apiClient } from '@/lib/api';
-import type { OverallProgress, StreakInfo, UserAchievement } from '@learn-ai/shared-types';
+import { CONTENT_TYPES } from '@learn-ai/shared-types';
+import type { ContentTypeSlug, OverallProgress, StreakInfo, UserAchievement } from '@learn-ai/shared-types';
 
 export function DashboardContent() {
   const { user } = useAuth();
@@ -19,11 +20,6 @@ export function DashboardContent() {
   );
 
   const loading = progressLoading || streaksLoading;
-
-  // Find the current (in-progress or next not-started) module
-  const currentModule = progress?.modules.find(
-    (m) => m.progressPercent > 0 && m.progressPercent < 100,
-  ) ?? progress?.modules.find((m) => m.progressPercent === 0);
 
   return (
     <div className="space-y-6">
@@ -42,9 +38,9 @@ export function DashboardContent() {
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {/* Progress Overview */}
+          {/* Overall Progress */}
           <div className="bg-card rounded-xl border p-6">
-            <h2 className="text-lg font-semibold">学習進捗</h2>
+            <h2 className="text-lg font-semibold">全体進捗</h2>
             <div className="mt-3">
               <p className="text-3xl font-bold">{progress?.overallPercent ?? 0}%</p>
               <p className="text-muted-foreground mt-1 text-sm">
@@ -59,39 +55,6 @@ export function DashboardContent() {
             </div>
           </div>
 
-          {/* Current Module */}
-          <div className="bg-card rounded-xl border p-6">
-            <h2 className="text-lg font-semibold">現在のモジュール</h2>
-            {currentModule ? (
-              <div className="mt-3">
-                <p className="font-medium">{currentModule.moduleTitle}</p>
-                <p className="text-muted-foreground mt-1 text-sm">
-                  {currentModule.completedLessons} / {currentModule.totalLessons} レッスン完了
-                </p>
-                <Link
-                  href={`/modules/${currentModule.moduleId}`}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 mt-3 inline-block rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-                >
-                  続きから学習
-                </Link>
-              </div>
-            ) : (
-              <div className="mt-3">
-                <p className="text-muted-foreground text-sm">
-                  {progress?.overallPercent === 100
-                    ? 'すべてのモジュールを完了しました！'
-                    : 'モジュールを選択して学習を始めましょう'}
-                </p>
-                <Link
-                  href="/modules"
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 mt-3 inline-block rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-                >
-                  モジュール一覧へ
-                </Link>
-              </div>
-            )}
-          </div>
-
           {/* Streak */}
           <div className="bg-card rounded-xl border p-6">
             <h2 className="text-lg font-semibold">ストリーク</h2>
@@ -102,6 +65,59 @@ export function DashboardContent() {
                 最長記録: {streaks?.longestStreak ?? 0}日
               </p>
             </div>
+          </div>
+
+          {/* Quick Link */}
+          <div className="bg-card rounded-xl border p-6">
+            <h2 className="text-lg font-semibold">学習を始める</h2>
+            <div className="mt-3">
+              <p className="text-muted-foreground text-sm">
+                AIコーディングツールを選んで学習を始めましょう
+              </p>
+              <Link
+                href="/contents"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 mt-3 inline-block rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+              >
+                ツールを選ぶ
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Per-content-type progress */}
+      {!loading && progress && progress.byContentType && progress.byContentType.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">ツール別進捗</h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            {progress.byContentType.map((ctp) => {
+              const ct = CONTENT_TYPES[ctp.contentType as ContentTypeSlug];
+              if (!ct) return null;
+              return (
+                <Link
+                  key={ctp.contentType}
+                  href={`/contents/${ctp.contentType}/dashboard`}
+                  className="bg-card hover:bg-accent/50 rounded-xl border p-5 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{ct.icon}</span>
+                    <div className="flex-1">
+                      <p className="font-semibold">{ct.nameJa}</p>
+                      <p className="text-muted-foreground text-sm">
+                        {ctp.completedLessons} / {ctp.totalLessons} レッスン完了
+                      </p>
+                    </div>
+                    <span className="text-lg font-bold">{ctp.overallPercent}%</span>
+                  </div>
+                  <div className="bg-muted mt-3 h-2 w-full overflow-hidden rounded-full">
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{ width: `${ctp.overallPercent}%`, backgroundColor: ct.color }}
+                    />
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}
@@ -124,35 +140,6 @@ export function DashboardContent() {
                   {new Date(a.earnedAt).toLocaleDateString('ja-JP')}
                 </p>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Module Progress List */}
-      {!loading && progress && progress.modules.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">モジュール別進捗</h2>
-          <div className="space-y-3">
-            {progress.modules.map((mod) => (
-              <Link
-                key={mod.moduleId}
-                href={`/modules/${mod.moduleId}`}
-                className="bg-card hover:bg-accent/50 flex items-center justify-between rounded-xl border p-4 transition-colors"
-              >
-                <div className="flex-1">
-                  <p className="font-medium">
-                    Module {mod.moduleNumber}: {mod.moduleTitle}
-                  </p>
-                  <div className="bg-muted mt-2 h-1.5 w-full max-w-xs overflow-hidden rounded-full">
-                    <div
-                      className="bg-primary h-full rounded-full transition-all"
-                      style={{ width: `${mod.progressPercent}%` }}
-                    />
-                  </div>
-                </div>
-                <span className="text-muted-foreground ml-4 text-sm">{mod.progressPercent}%</span>
-              </Link>
             ))}
           </div>
         </div>
