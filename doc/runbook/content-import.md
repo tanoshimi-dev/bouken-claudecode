@@ -314,3 +314,16 @@ cat sys/backend/api/.env | grep DATABASE_URL
 # PostgreSQL が起動しているか確認
 docker compose ps
 ```
+
+1. bouken.appディレクトリの対象コンテンツをアプリにコピー
+例）
+/bouken.app/contents/codex/doc/contents
+↓
+/xxx/bouken.app/ai/doc/contents/codex
+
+2. アプリにインポートする
+
+アプリディレクトリ
+```bash
+docker compose --env-file .env.prod -f docker-compose.prod.yml run --rm -v $(pwd)/doc:/doc -v $(pwd)/scripts:/app/scripts api node --import tsx /app/scripts/seed-content.ts 
+```
