@@ -15,7 +15,7 @@ import type { LessonDetail } from '@learn-ai/shared-types';
 type Props = NativeStackScreenProps<ModuleStackParamList, 'Lesson'>;
 
 export default function LessonScreen({ route, navigation }: Props) {
-  const { moduleId, lessonId } = route.params;
+  const { contentType, moduleId, lessonId } = route.params;
   const { data: lesson, loading, error, refetch } = useApi<LessonDetail>(() => apiClient.getLesson(moduleId, lessonId));
   const [completing, setCompleting] = useState(false);
 
@@ -39,13 +39,13 @@ export default function LessonScreen({ route, navigation }: Props) {
 
   const handlePrev = () => {
     if (lesson?.prevLesson) {
-      navigation.replace('Lesson', { moduleId, lessonId: lesson.prevLesson.id });
+      navigation.replace('Lesson', { contentType, moduleId, lessonId: lesson.prevLesson.id });
     }
   };
 
   const handleNext = () => {
     if (lesson?.nextLesson) {
-      navigation.replace('Lesson', { moduleId, lessonId: lesson.nextLesson.id });
+      navigation.replace('Lesson', { contentType, moduleId, lessonId: lesson.nextLesson.id });
     }
   };
 

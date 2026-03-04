@@ -12,10 +12,11 @@ export type HomeStackParamList = {
 
 // Module stack
 export type ModuleStackParamList = {
-  ModuleList: undefined;
-  ModuleDetail: { moduleId: string };
-  Lesson: { moduleId: string; lessonId: string };
-  Quiz: { quizId: string };
+  ContentSelect: undefined;
+  ModuleList: { contentType: string };
+  ModuleDetail: { contentType: string; moduleId: string };
+  Lesson: { contentType: string; moduleId: string; lessonId: string };
+  Quiz: { contentType: string; quizId: string };
   QuizResults: {
     score: number;
     maxScore: number;
@@ -27,6 +28,7 @@ export type ModuleStackParamList = {
       explanation: string;
     }[];
     moduleId: string;
+    contentType: string;
   };
 };
 

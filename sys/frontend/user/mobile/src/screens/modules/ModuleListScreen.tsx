@@ -15,8 +15,11 @@ import type { ModuleWithProgress } from '@learn-ai/shared-types';
 
 type Props = NativeStackScreenProps<ModuleStackParamList, 'ModuleList'>;
 
-export default function ModuleListScreen({ navigation }: Props) {
-  const { data: modules, loading, error, refetch } = useApi<ModuleWithProgress[]>(() => apiClient.getModules());
+export default function ModuleListScreen({ route, navigation }: Props) {
+  const { contentType } = route.params;
+  const { data: modules, loading, error, refetch } = useApi<ModuleWithProgress[]>(() =>
+    apiClient.getModules(contentType),
+  );
 
   if (loading) return <LoadingScreen />;
   if (error) return <ErrorView message={error} onRetry={refetch} />;
@@ -30,7 +33,7 @@ export default function ModuleListScreen({ navigation }: Props) {
       renderItem={({ item }) => (
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={() => navigation.navigate('ModuleDetail', { moduleId: item.id })}
+          onPress={() => navigation.navigate('ModuleDetail', { contentType, moduleId: item.id })}
         >
           <Card style={styles.card}>
             <Text style={styles.moduleNumber}>Module {item.number}</Text>

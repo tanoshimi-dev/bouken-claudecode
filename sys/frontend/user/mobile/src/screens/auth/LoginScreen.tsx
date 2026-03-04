@@ -45,9 +45,9 @@ export default function LoginScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.title}>Learn Claude Code</Text>
+          <Text style={styles.title}>AI学習</Text>
           <Text style={styles.subtitle}>
-            Master Claude Code with interactive lessons, quizzes, and hands-on practice.
+            AIコーディングツールの使い方をインタラクティブに学べる教育アプリ
           </Text>
         </View>
 

@@ -27,7 +27,7 @@ const difficultyColors: Record<string, string> = {
 };
 
 export default function ModuleDetailScreen({ route, navigation }: Props) {
-  const { moduleId } = route.params;
+  const { contentType, moduleId } = route.params;
   const { data: module, loading, error, refetch } = useApi<ModuleDetail>(() => apiClient.getModule(moduleId));
 
   React.useEffect(() => {
@@ -52,7 +52,7 @@ export default function ModuleDetailScreen({ route, navigation }: Props) {
         <TouchableOpacity
           key={lesson.id}
           activeOpacity={0.7}
-          onPress={() => navigation.navigate('Lesson', { moduleId, lessonId: lesson.id })}
+          onPress={() => navigation.navigate('Lesson', { contentType, moduleId, lessonId: lesson.id })}
         >
           <Card style={styles.lessonCard}>
             <View style={styles.lessonRow}>
@@ -81,7 +81,7 @@ export default function ModuleDetailScreen({ route, navigation }: Props) {
             <TouchableOpacity
               key={quiz.id}
               activeOpacity={0.7}
-              onPress={() => navigation.navigate('Quiz', { quizId: quiz.id })}
+              onPress={() => navigation.navigate('Quiz', { contentType, quizId: quiz.id })}
             >
               <Card style={styles.quizCard}>
                 <Text style={styles.quizTitle}>{quiz.title}</Text>

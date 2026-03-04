@@ -35,7 +35,7 @@ export default function MainTabs() {
       })}
     >
       <Tab.Screen name="HomeTab" component={HomeStack} options={{ title: 'Home' }} />
-      <Tab.Screen name="ModulesTab" component={ModuleStack} options={{ title: 'Modules' }} />
+      <Tab.Screen name="ModulesTab" component={ModuleStack} options={{ title: '学習' }} />
       <Tab.Screen name="ProfileTab" component={ProfileStack} options={{ title: 'Profile' }} />
     </Tab.Navigator>
   );

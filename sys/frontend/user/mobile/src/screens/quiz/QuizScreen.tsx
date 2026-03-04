@@ -15,7 +15,7 @@ import type { QuizDetail } from '@learn-ai/shared-types';
 type Props = NativeStackScreenProps<ModuleStackParamList, 'Quiz'>;
 
 export default function QuizScreen({ route, navigation }: Props) {
-  const { quizId } = route.params;
+  const { contentType, quizId } = route.params;
   const { data: quiz, loading, error, refetch } = useApi<QuizDetail>(() => apiClient.getQuiz(quizId));
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -60,6 +60,7 @@ export default function QuizScreen({ route, navigation }: Props) {
       navigation.replace('QuizResults', {
         ...res.data,
         moduleId: quiz.module.id,
+        contentType,
       });
     } catch {
       Alert.alert('Error', 'Failed to submit quiz. Please try again.');

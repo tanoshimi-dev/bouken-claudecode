@@ -1,5 +1,7 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useApi } from '@/hooks/useApi';
 import { apiClient } from '@/config/api';
@@ -8,12 +10,17 @@ import ErrorView from '@/components/common/ErrorView';
 import Card from '@/components/common/Card';
 import ProgressBar from '@/components/common/ProgressBar';
 import { colors } from '@/theme/colors';
-import { spacing } from '@/theme/spacing';
+import { spacing, borderRadius } from '@/theme/spacing';
 import { typography } from '@/theme/typography';
-import type { OverallProgress, StreakInfo } from '@learn-ai/shared-types';
+import { CONTENT_TYPES } from '@learn-ai/shared-types';
+import type { ContentTypeSlug, OverallProgress, StreakInfo } from '@learn-ai/shared-types';
+import type { RootStackParamList } from '@/navigation/types';
+
+type NavProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function HomeScreen() {
   const user = useAppSelector((state) => state.auth.user);
+  const navigation = useNavigation<NavProp>();
   const { data: progress, loading: progressLoading, error: progressError, refetch: refetchProgress } = useApi<OverallProgress>(() => apiClient.getProgress());
   const { data: streaks, loading: streaksLoading } = useApi<StreakInfo>(() => apiClient.getStreaks());
 
@@ -48,24 +55,48 @@ export default function HomeScreen() {
         </Text>
       </Card>
 
-      {/* Module Progress List */}
-      {progress?.modules.map((mod) => (
-        <Card key={mod.moduleId} style={styles.moduleCard}>
-          <Text style={styles.moduleNumber}>Module {mod.moduleNumber}</Text>
-          <Text style={styles.moduleTitle}>{mod.moduleTitle}</Text>
-          <ProgressBar progress={mod.progressPercent} style={styles.moduleProgress} />
-          <View style={styles.moduleStats}>
-            <Text style={styles.moduleStat}>
-              {mod.completedLessons}/{mod.totalLessons} lessons
-            </Text>
-            {mod.latestQuizScore && (
-              <Text style={styles.moduleStat}>
-                Quiz: {mod.latestQuizScore.score}/{mod.latestQuizScore.maxScore}
-              </Text>
-            )}
-          </View>
-        </Card>
-      ))}
+      {/* Per-content-type progress */}
+      {progress?.byContentType && progress.byContentType.length > 0 && (
+        <>
+          <Text style={styles.sectionTitle}>ツール別進捗</Text>
+          {progress.byContentType.map((ctp) => {
+            const ct = CONTENT_TYPES[ctp.contentType as ContentTypeSlug];
+            if (!ct) return null;
+            return (
+              <TouchableOpacity
+                key={ctp.contentType}
+                activeOpacity={0.7}
+                onPress={() =>
+                  navigation.navigate('Main', {
+                    screen: 'ModulesTab',
+                    params: {
+                      screen: 'ModuleList',
+                      params: { contentType: ctp.contentType },
+                    },
+                  })
+                }
+              >
+                <Card style={styles.ctCard}>
+                  <View style={styles.ctRow}>
+                    <Text style={styles.ctIcon}>{ct.icon}</Text>
+                    <View style={styles.ctInfo}>
+                      <Text style={styles.ctName}>{ct.nameJa}</Text>
+                      <ProgressBar
+                        progress={ctp.overallPercent}
+                        style={styles.ctProgress}
+                        color={ct.color}
+                      />
+                      <Text style={styles.ctStat}>
+                        {ctp.completedLessons}/{ctp.totalLessons} lessons - {ctp.overallPercent}%
+                      </Text>
+                    </View>
+                  </View>
+                </Card>
+              </TouchableOpacity>
+            );
+          })}
+        </>
+      )}
     </ScrollView>
   );
 }
@@ -123,30 +154,36 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginTop: spacing.sm,
   },
-  moduleCard: {
-    marginBottom: spacing.sm,
-  },
-  moduleNumber: {
-    ...typography.caption,
-    color: colors.accent,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 2,
-  },
-  moduleTitle: {
+  sectionTitle: {
     ...typography.h3,
     color: colors.textPrimary,
     marginBottom: spacing.sm,
+    marginTop: spacing.sm,
   },
-  moduleProgress: {
+  ctCard: {
+    marginBottom: spacing.sm,
+  },
+  ctRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  ctIcon: {
+    fontSize: 28,
+    marginRight: spacing.md,
+  },
+  ctInfo: {
+    flex: 1,
+  },
+  ctName: {
+    ...typography.body,
+    color: colors.textPrimary,
+    fontWeight: '600',
     marginBottom: spacing.xs,
   },
-  moduleStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  ctProgress: {
+    marginBottom: spacing.xs,
   },
-  moduleStat: {
+  ctStat: {
     ...typography.caption,
     color: colors.textSecondary,
   },

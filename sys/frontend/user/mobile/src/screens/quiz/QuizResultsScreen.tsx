@@ -10,7 +10,7 @@ import { typography } from '@/theme/typography';
 type Props = NativeStackScreenProps<ModuleStackParamList, 'QuizResults'>;
 
 export default function QuizResultsScreen({ route, navigation }: Props) {
-  const { score, maxScore, percentage, results, moduleId } = route.params;
+  const { score, maxScore, percentage, results, moduleId, contentType } = route.params;
   const passed = percentage >= 70;
 
   return (
@@ -45,7 +45,7 @@ export default function QuizResultsScreen({ route, navigation }: Props) {
       <View style={styles.actions}>
         <TouchableOpacity
           style={styles.primaryButton}
-          onPress={() => navigation.navigate('ModuleDetail', { moduleId })}
+          onPress={() => navigation.navigate('ModuleDetail', { contentType, moduleId })}
         >
           <Text style={styles.primaryButtonText}>Back to Module</Text>
         </TouchableOpacity>
