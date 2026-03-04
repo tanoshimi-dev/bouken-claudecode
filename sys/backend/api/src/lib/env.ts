@@ -48,7 +48,7 @@ const envSchema = z.object({
   MOBILE_SCHEME: z.string().default('learnclaudecode'),
 
   // Cookie
-  COOKIE_DOMAIN: z.string().optional(), // e.g. '.claudecode.bouken.app' for production
+  COOKIE_DOMAIN: z.string().optional(), // e.g. '.ai.bouken.app' for production
 });
 
 export const env = envSchema.parse(process.env);

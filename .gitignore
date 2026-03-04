@@ -4,3 +4,5 @@ memo
 .DS_Store
 *.log
 *.tmp
+
+docker-compose.prod.yml
