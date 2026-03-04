@@ -1,1 +1,6 @@
 memo
+
+
+.DS_Store
+*.log
+*.tmp
