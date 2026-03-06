@@ -5,7 +5,7 @@ import { useApi } from '@/hooks/useApi';
 import { useAuth } from '@/hooks/useAuth';
 import { apiClient } from '@/lib/api';
 import { CONTENT_TYPES } from '@learn-ai/shared-types';
-import type { ContentTypeSlug, OverallProgress, StreakInfo, UserAchievement } from '@learn-ai/shared-types';
+import type { ContentTypeSlug, OverallProgress, StreakInfo, UserAchievement, FreshnessSummary } from '@learn-ai/shared-types';
 
 export function DashboardContent() {
   const { user } = useAuth();
@@ -17,6 +17,9 @@ export function DashboardContent() {
   );
   const { data: achievements } = useApi<UserAchievement[]>(() =>
     apiClient.getAchievements(),
+  );
+  const { data: freshness } = useApi<FreshnessSummary>(() =>
+    apiClient.getUpdatesSummary(),
   );
 
   const loading = progressLoading || streaksLoading;
@@ -83,6 +86,45 @@ export function DashboardContent() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Content Freshness Widget */}
+      {!loading && freshness && (
+        <Link
+          href="/updates"
+          className="bg-card hover:bg-accent/50 block rounded-xl border p-5 transition-colors"
+        >
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Content Freshness</h2>
+            <span
+              className={`text-2xl font-bold ${
+                freshness.overallFreshness >= 90
+                  ? 'text-green-600'
+                  : freshness.overallFreshness >= 70
+                    ? 'text-yellow-600'
+                    : 'text-red-600'
+              }`}
+            >
+              {freshness.overallFreshness}%
+            </span>
+          </div>
+          <div className="bg-muted mt-3 h-2 w-full overflow-hidden rounded-full">
+            <div
+              className={`h-full rounded-full transition-all ${
+                freshness.overallFreshness >= 90
+                  ? 'bg-green-500'
+                  : freshness.overallFreshness >= 70
+                    ? 'bg-yellow-500'
+                    : 'bg-red-500'
+              }`}
+              style={{ width: `${freshness.overallFreshness}%` }}
+            />
+          </div>
+          <p className="text-muted-foreground mt-2 text-sm">
+            {freshness.tools.reduce((sum, t) => sum + t.pendingUpdates, 0)} updates pending across{' '}
+            {freshness.tools.length} tools
+          </p>
+        </Link>
       )}
 
       {/* Per-content-type progress */}

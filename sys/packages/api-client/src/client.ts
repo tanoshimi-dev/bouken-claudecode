@@ -19,6 +19,8 @@ import type {
   ToolVersionDetail,
   RecentUpdate,
   VersionCheckResult,
+  AdminModuleLesson,
+  PendingImpactItem,
 } from '@learn-ai/shared-types';
 
 export interface ApiClientConfig {
@@ -170,6 +172,14 @@ export class ApiClient {
   }
 
   // Update Tracker Admin
+  async getAdminModules(): Promise<ApiResponse<AdminModuleLesson[]>> {
+    return this.request('/api/admin/updates/modules');
+  }
+
+  async getAdminPendingQueue(): Promise<ApiResponse<PendingImpactItem[]>> {
+    return this.request('/api/admin/updates/queue');
+  }
+
   async createToolVersion(body: {
     toolSlug: string;
     version: string;

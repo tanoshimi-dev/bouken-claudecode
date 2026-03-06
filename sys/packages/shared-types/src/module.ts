@@ -38,4 +38,9 @@ export interface LessonDetail {
   status: 'not_started' | 'in_progress' | 'completed';
   prevLesson: { id: string; title: string } | null;
   nextLesson: { id: string; title: string } | null;
+  updateStatus: {
+    status: 'pending' | 'in_progress';
+    version: string;
+    toolSlug: string;
+  } | null;
 }

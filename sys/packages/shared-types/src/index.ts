@@ -37,4 +37,6 @@ export type {
   ToolDetail,
   RecentUpdate,
   VersionCheckResult,
+  AdminModuleLesson,
+  PendingImpactItem,
 } from './update-tracker';

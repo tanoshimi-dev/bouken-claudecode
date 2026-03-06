@@ -77,3 +77,23 @@ export interface VersionCheckResult {
   latestVersion: string;
   isNew: boolean;
 }
+
+export interface AdminModuleLesson {
+  id: string;
+  number: number;
+  title: string;
+  contentType: string;
+  lessons: { id: string; order: number; title: string }[];
+}
+
+export interface PendingImpactItem {
+  id: string;
+  toolSlug: ToolSlug;
+  displayName: string;
+  version: string;
+  versionId: string;
+  lessonCount: number;
+  breakingChanges: boolean;
+  status: 'pending' | 'in_progress' | 'updated';
+  priority: ImpactPriority;
+}

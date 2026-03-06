@@ -97,6 +97,20 @@ export class ModuleService {
       },
     });
 
+    // Get update impact status for this lesson
+    const pendingImpact = await prisma.contentUpdateImpact.findFirst({
+      where: {
+        OR: [
+          { moduleId, lessonId, status: { in: ['pending', 'in_progress'] } },
+          { moduleId, lessonId: null, status: { in: ['pending', 'in_progress'] } },
+        ],
+      },
+      include: {
+        toolVersion: { select: { version: true, toolSlug: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
     // Get prev/next lesson
     const [prevLesson, nextLesson] = await Promise.all([
       prisma.lesson.findFirst({
@@ -121,6 +135,13 @@ export class ModuleService {
       status: progress?.status ?? 'not_started',
       prevLesson,
       nextLesson,
+      updateStatus: pendingImpact
+        ? {
+            status: pendingImpact.status as 'pending' | 'in_progress',
+            version: pendingImpact.toolVersion.version,
+            toolSlug: pendingImpact.toolVersion.toolSlug,
+          }
+        : null,
     };
   }
 }

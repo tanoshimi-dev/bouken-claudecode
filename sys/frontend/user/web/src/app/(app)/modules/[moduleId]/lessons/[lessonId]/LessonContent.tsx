@@ -76,9 +76,20 @@ export function LessonContent({
         <span className="text-foreground">Lesson {lesson.order}</span>
       </div>
 
-      {/* Title */}
+      {/* Title + Version Tag */}
       <div>
-        <h1 className="text-3xl font-bold">{lesson.title}</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl font-bold">{lesson.title}</h1>
+          {lesson.updateStatus ? (
+            <span className="rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-700">
+              Update pending: v{lesson.updateStatus.version}
+            </span>
+          ) : (
+            <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
+              Up to date
+            </span>
+          )}
+        </div>
         <p className="text-muted-foreground mt-1 text-sm capitalize">{lesson.lessonType}</p>
       </div>
 

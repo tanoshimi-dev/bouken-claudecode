@@ -16,6 +16,18 @@ const updateTrackerService = new UpdateTrackerService();
 // All admin routes require auth
 adminUpdateRoutes.use('*', authMiddleware);
 
+// Get all modules with lessons (for impact mapping picker)
+adminUpdateRoutes.get('/modules', async (c) => {
+  const modules = await updateTrackerService.getAllModulesWithLessons();
+  return c.json({ data: modules });
+});
+
+// Get pending updates queue
+adminUpdateRoutes.get('/queue', async (c) => {
+  const queue = await updateTrackerService.getPendingQueue();
+  return c.json({ data: queue });
+});
+
 // Register a new tool version
 adminUpdateRoutes.post('/versions', async (c) => {
   const body = await c.req.json();

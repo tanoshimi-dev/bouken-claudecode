@@ -349,6 +349,73 @@ export class UpdateTrackerService {
     return results;
   }
 
+  // ── Admin: Get All Modules with Lessons (for impact picker) ──
+
+  async getAllModulesWithLessons() {
+    const modules = await prisma.module.findMany({
+      where: { isPublished: true },
+      orderBy: [{ contentType: 'asc' }, { number: 'asc' }],
+      select: {
+        id: true,
+        number: true,
+        title: true,
+        contentType: true,
+        lessons: {
+          where: { isPublished: true },
+          orderBy: { order: 'asc' },
+          select: { id: true, order: true, title: true },
+        },
+      },
+    });
+    return modules;
+  }
+
+  // ── Admin: Get Pending Updates Queue ───────────────────
+
+  async getPendingQueue() {
+    const versions = await prisma.toolVersion.findMany({
+      where: {
+        impacts: { some: { status: { in: ['pending', 'in_progress'] } } },
+      },
+      orderBy: { releaseDate: 'desc' },
+      include: {
+        tool: { select: { displayName: true } },
+        impacts: {
+          select: { id: true, status: true, priority: true },
+        },
+      },
+    });
+
+    const priorityOrder: Record<string, number> = { critical: 0, high: 1, normal: 2, low: 3 };
+
+    const items = versions.map((v) => {
+      const unresolvedImpacts = v.impacts.filter(
+        (i) => i.status === 'pending' || i.status === 'in_progress',
+      );
+      const bestPriority = unresolvedImpacts.reduce(
+        (best: string, i) => (priorityOrder[i.priority] < priorityOrder[best] ? i.priority : best),
+        'low',
+      );
+      const hasInProgress = unresolvedImpacts.some((i) => i.status === 'in_progress');
+
+      return {
+        id: v.id,
+        toolSlug: v.toolSlug,
+        displayName: v.tool.displayName,
+        version: v.version,
+        versionId: v.id,
+        lessonCount: unresolvedImpacts.length,
+        breakingChanges: v.breakingChanges,
+        status: hasInProgress ? ('in_progress' as const) : ('pending' as const),
+        priority: bestPriority,
+      };
+    });
+
+    items.sort((a, b) => (priorityOrder[a.priority] ?? 99) - (priorityOrder[b.priority] ?? 99));
+
+    return items;
+  }
+
   // ── Private Helpers ────────────────────────────────────
 
   private async countUnresolvedImpacts(toolSlug: string) {
