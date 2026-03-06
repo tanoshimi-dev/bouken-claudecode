@@ -24,3 +24,17 @@ export type {
 export type { Badge, UserAchievement, AchievementProgress, NewAchievement } from './achievement';
 export type { ContentTypeSlug, ContentTypeInfo, ContentTypeWithCount } from './content-type';
 export { CONTENT_TYPES, isValidContentType } from './content-type';
+export type {
+  ToolSlug,
+  ChangeType,
+  ImpactStatus,
+  ImpactPriority,
+  ToolFreshness,
+  FreshnessSummary,
+  ToolVersionChange,
+  VersionImpact,
+  ToolVersionDetail,
+  ToolDetail,
+  RecentUpdate,
+  VersionCheckResult,
+} from './update-tracker';

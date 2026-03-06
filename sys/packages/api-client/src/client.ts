@@ -14,6 +14,11 @@ import type {
   UserAchievement,
   AchievementProgress,
   ContentTypeWithCount,
+  FreshnessSummary,
+  ToolDetail,
+  ToolVersionDetail,
+  RecentUpdate,
+  VersionCheckResult,
 } from '@learn-ai/shared-types';
 
 export interface ApiClientConfig {
@@ -144,6 +149,81 @@ export class ApiClient {
 
   async getAchievementProgress(): Promise<ApiResponse<AchievementProgress[]>> {
     return this.request('/api/achievements/progress');
+  }
+
+  // Update Tracker
+  async getUpdatesSummary(): Promise<ApiResponse<FreshnessSummary>> {
+    return this.request('/api/updates/summary');
+  }
+
+  async getRecentUpdates(limit?: number): Promise<ApiResponse<RecentUpdate[]>> {
+    const query = limit ? `?limit=${limit}` : '';
+    return this.request(`/api/updates/recent${query}`);
+  }
+
+  async getToolDetail(toolSlug: string): Promise<ApiResponse<ToolDetail>> {
+    return this.request(`/api/updates/${encodeURIComponent(toolSlug)}`);
+  }
+
+  async getVersionDetail(toolSlug: string, versionId: string): Promise<ApiResponse<ToolVersionDetail>> {
+    return this.request(`/api/updates/${encodeURIComponent(toolSlug)}/versions/${versionId}`);
+  }
+
+  // Update Tracker Admin
+  async createToolVersion(body: {
+    toolSlug: string;
+    version: string;
+    releaseDate: string;
+    summary: string;
+    changes: { type: string; description: string }[];
+    breakingChanges: boolean;
+    changelogUrl?: string;
+  }): Promise<ApiResponse<unknown>> {
+    return this.request('/api/admin/updates/versions', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  }
+
+  async createVersionImpacts(
+    versionId: string,
+    body: {
+      impacts: {
+        moduleId: string;
+        lessonId?: string;
+        impactDescription?: string;
+        priority: string;
+      }[];
+    },
+  ): Promise<ApiResponse<{ count: number }>> {
+    return this.request(`/api/admin/updates/versions/${versionId}/impacts`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  }
+
+  async updateImpactStatus(
+    impactId: string,
+    body: { status: string; notes?: string },
+  ): Promise<ApiResponse<unknown>> {
+    return this.request(`/api/admin/updates/impacts/${impactId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    });
+  }
+
+  async updateToolContentVersion(
+    toolSlug: string,
+    body: { currentContentVersion: string },
+  ): Promise<ApiResponse<unknown>> {
+    return this.request(`/api/admin/updates/tools/${encodeURIComponent(toolSlug)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    });
+  }
+
+  async triggerVersionCheck(): Promise<ApiResponse<{ results: VersionCheckResult[] }>> {
+    return this.request('/api/admin/updates/check', { method: 'POST' });
   }
 }
 

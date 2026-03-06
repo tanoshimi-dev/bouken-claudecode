@@ -8,6 +8,7 @@ import type { ContentTypeSlug } from '@learn-ai/shared-types';
 const globalNavItems = [
   { href: '/contents', label: 'AIツール選択' },
   { href: '/dashboard', label: 'ダッシュボード' },
+  { href: '/updates', label: 'Update Tracker' },
   { href: '/profile', label: 'プロフィール' },
   { href: '/profile/settings', label: '設定' },
 ];

@@ -22,6 +22,7 @@ model User {
   achievements       UserAchievement[]
   streak             UserStreak?
   playgroundSnippets PlaygroundSnippet[]
+  reviewedImpacts    ContentUpdateImpact[]
 
   @@map("users")
 }
@@ -54,6 +55,7 @@ model Module {
   lessons  Lesson[]
   quizzes  Quiz[]
   progress UserProgress[]
+  updateImpacts ContentUpdateImpact[]
 
   @@unique([contentType, number])
   @@index([contentType])
@@ -71,6 +73,7 @@ model Lesson {
 
   module   Module         @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   progress UserProgress[]
+  updateImpacts ContentUpdateImpact[]
 
   @@unique([moduleId, order])
   @@map("lessons")
@@ -164,6 +167,67 @@ model UserStreak {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_streaks")
+}
+
+model ToolTrackingConfig {
+  id                    String    @id @default(cuid())
+  toolSlug              String    @unique @map("tool_slug")
+  displayName           String    @map("display_name")
+  currentContentVersion String    @map("current_content_version")
+  checkSourceType       String    @map("check_source_type") // npm | github_release | rss
+  checkSourceIdentifier String    @map("check_source_identifier")
+  changelogUrl          String    @map("changelog_url")
+  documentationUrl      String    @map("documentation_url")
+  lastCheckedAt         DateTime? @map("last_checked_at")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  versions ToolVersion[]
+
+  @@map("tool_tracking_config")
+}
+
+model ToolVersion {
+  id              String   @id @default(cuid())
+  toolSlug        String   @map("tool_slug")
+  version         String
+  releaseDate     DateTime @map("release_date") @db.Date
+  summary         String   @db.Text
+  changes         Json     @default("[]")
+  changelogUrl    String?  @map("changelog_url")
+  breakingChanges Boolean  @default(false) @map("breaking_changes")
+  isProcessed     Boolean  @default(false) @map("is_processed")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  tool    ToolTrackingConfig  @relation(fields: [toolSlug], references: [toolSlug])
+  impacts ContentUpdateImpact[]
+
+  @@unique([toolSlug, version])
+  @@map("tool_versions")
+}
+
+model ContentUpdateImpact {
+  id                String    @id @default(cuid())
+  toolVersionId     String    @map("tool_version_id")
+  moduleId          String    @map("module_id")
+  lessonId          String?   @map("lesson_id")
+  impactDescription String?   @map("impact_description") @db.Text
+  status            String    @default("pending") // not_affected | pending | in_progress | updated
+  priority          String    @default("normal") // critical | high | normal | low
+  reviewedAt        DateTime? @map("reviewed_at")
+  reviewedBy        String?   @map("reviewed_by")
+  notes             String?   @db.Text
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  toolVersion ToolVersion @relation(fields: [toolVersionId], references: [id], onDelete: Cascade)
+  module      Module      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  lesson      Lesson?     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  reviewer    User?       @relation(fields: [reviewedBy], references: [id])
+
+  @@unique([toolVersionId, moduleId, lessonId])
+  @@map("content_update_impacts")
 }
 
 model PlaygroundSnippet {

@@ -8,6 +8,8 @@ import { progressRoutes } from './routes/progress.js';
 import { playgroundRoutes } from './routes/playground.js';
 import { achievementRoutes } from './routes/achievements.js';
 import { contentTypeRoutes } from './routes/content-types.js';
+import { updateRoutes } from './routes/updates.js';
+import { adminUpdateRoutes } from './routes/admin-updates.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { env } from './lib/env.js';
 
@@ -35,5 +37,7 @@ app.route('/quizzes', quizRoutes);
 app.route('/progress', progressRoutes);
 app.route('/playground', playgroundRoutes);
 app.route('/achievements', achievementRoutes);
+app.route('/updates', updateRoutes);
+app.route('/admin/updates', adminUpdateRoutes);
 
 export default app;

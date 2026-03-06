@@ -1,0 +1,15 @@
+name: Check Tool Versions
+on:
+  schedule:
+    - cron: '0 9 * * 1,4' # Mon & Thu 9:00 UTC
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger version check
+        run: |
+          curl -X POST "${{ secrets.API_URL }}/api/admin/updates/check" \
+            -H "Authorization: Bearer ${{ secrets.ADMIN_API_KEY }}" \
+            -H "Content-Type: application/json"
