@@ -1,10 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { apiClient } from '@/lib/api';
 import type { LinkedAccount } from '@learn-ai/shared-types';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 const ALL_PROVIDERS = [
   { id: 'google', label: 'Google', icon: '🔵' },
@@ -22,19 +19,23 @@ export function ProviderManager({ linkedAccounts }: ProviderManagerProps) {
   const [unlinking, setUnlinking] = useState<string | null>(null);
 
   const linkedProviders = new Set(linkedAccounts.map((a) => a.provider));
-  const canUnlink = linkedAccounts.length > 1;
-
-  const handleLink = (providerId: string) => {
-    window.location.href = `${API_URL}/api/auth/link/${providerId}`;
-  };
+  const hasLinkedProvider = linkedAccounts.length > 0;
 
   const handleUnlink = async (providerId: string) => {
+    if (!confirm('連携を解除するとログアウトされます。よろしいですか？')) {
+      return;
+    }
     setUnlinking(providerId);
     try {
-      await apiClient.unlinkProvider(providerId);
-      window.location.reload();
+      const res = await fetch(`/api/auth/link/${providerId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({ error: res.statusText }));
+        throw new Error((body as { error?: string }).error ?? 'Request failed');
+      }
+      window.location.href = '/login';
     } catch (err) {
-      alert(err instanceof Error ? err.message : '連携解除に失敗しました');
+      const message = err instanceof Error ? err.message : '連携解除に失敗しました';
+      alert(message.includes('fetch') ? '通信エラーが発生しました。再度お試しください。' : message);
       setUnlinking(null);
     }
   };
@@ -67,7 +68,7 @@ export function ProviderManager({ linkedAccounts }: ProviderManagerProps) {
                   <span className="text-sm text-green-600">連携済み</span>
                   <button
                     onClick={() => handleUnlink(provider.id)}
-                    disabled={!canUnlink || unlinking === provider.id}
+                    disabled={unlinking === provider.id}
                     className="text-destructive hover:bg-destructive/10 rounded-md border border-current px-3 py-1 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {unlinking === provider.id ? '解除中...' : '連携解除'}
@@ -75,8 +76,8 @@ export function ProviderManager({ linkedAccounts }: ProviderManagerProps) {
                 </div>
               ) : (
                 <button
-                  onClick={() => handleLink(provider.id)}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-3 py-1 text-xs font-medium transition-colors"
+                  disabled={hasLinkedProvider}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-3 py-1 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   連携する
                 </button>

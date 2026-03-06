@@ -94,11 +94,11 @@ authRoutes.post('/apple/callback', async (c) => {
   deleteCookie(c, 'oauth_state', { path: '/' });
   deleteCookie(c, 'oauth_code_verifier', { path: '/' });
 
-  // Check if this is a linking flow
+  // Check if this is a switch-provider flow
   const linkUserId = getCookie(c, 'oauth_link_user');
   if (linkUserId) {
     deleteCookie(c, 'oauth_link_user', { path: '/' });
-    await authService.linkProvider(linkUserId, 'apple', code);
+    await authService.switchProvider(linkUserId, 'apple', code);
     return c.redirect(`${env.APP_URL}/profile/settings`);
   }
 
@@ -128,7 +128,7 @@ authRoutes.post('/apple/callback', async (c) => {
   return c.redirect(`${env.APP_URL}/dashboard`);
 });
 
-// Link provider — Auth required; redirects to provider OAuth with link cookie
+// Switch provider — Auth required; redirects to provider OAuth with switch cookie
 authRoutes.get('/link/:provider', authMiddleware, async (c) => {
   const provider = c.req.param('provider');
   const user = c.get('user');
@@ -212,11 +212,11 @@ authRoutes.get('/:provider/callback', async (c) => {
   deleteCookie(c, 'oauth_state', { path: '/' });
   deleteCookie(c, 'oauth_code_verifier', { path: '/' });
 
-  // Check if this is a linking flow
+  // Check if this is a switch-provider flow
   const linkUserId = getCookie(c, 'oauth_link_user');
   if (linkUserId) {
     deleteCookie(c, 'oauth_link_user', { path: '/' });
-    await authService.linkProvider(linkUserId, provider, code, codeVerifier);
+    await authService.switchProvider(linkUserId, provider, code, codeVerifier);
     return c.redirect(`${env.APP_URL}/profile/settings`);
   }
 

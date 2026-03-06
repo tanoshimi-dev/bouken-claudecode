@@ -13,7 +13,7 @@ export function SettingsContent() {
       <div className="bg-card rounded-xl border p-6">
         <h2 className="mb-4 text-lg font-semibold">アカウント連携</h2>
         <p className="text-muted-foreground mb-4 text-sm">
-          外部サービスとの連携を管理します。複数のサービスを連携すると、どのサービスからでもログインできます。
+          他のサービスとの連携に切り替える場合、一旦現在の連携を解除してから、新しいサービスと連携してください。
         </p>
         {user ? (
           <ProviderManager linkedAccounts={user.linkedAccounts ?? []} />

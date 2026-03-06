@@ -31,13 +31,13 @@ Change the authentication system from allowing multiple linked providers to a **
 
 ## Phase Summary
 
-| Phase | Focus | Summary |
-|-------|-------|---------|
-| **1** | Bug Fix (Prerequisite) | Fix unlink button: Next.js API proxy for cross-origin cookie issue, remove mobile guard, add state refresh |
-| **2** | Backend Policy | Remove `linkProvider()`, add `switchProvider()`, relax `unlinkProvider()`, optionally add email-based user matching |
-| **3** | Frontend Web UI | Redesign `ProviderManager` for single-provider with switch/disconnect |
-| **4** | Frontend Mobile UI | Mirror web UI changes in `SettingsScreen` |
-| **5** | Data Migration | Clean up multi-provider users, add `@unique` DB constraint |
+| Phase | Focus | Status | Summary |
+|-------|-------|--------|---------|
+| **1** | Bug Fix (Prerequisite) | Done | Fix unlink button: Next.js API proxy for cross-origin cookie issue, remove mobile guard, logout on unlink |
+| **2** | Backend Policy | Done | Remove `linkProvider()`, add `switchProvider()`, relax `unlinkProvider()`, routes updated |
+| **3** | Frontend Web UI | Done | Single-provider UI: unlink with confirm + logout, other providers disabled |
+| **4** | Frontend Mobile UI | Done | Same pattern: unlink clears tokens + clearUser(), other providers disabled |
+| **5** | Data Migration | Not started | Clean up multi-provider users, add `@unique` DB constraint |
 
 ---
 
@@ -213,56 +213,6 @@ async unlinkProvider(userId: string, provider: string): Promise<void> {
 - Change `GET /api/auth/link/:provider` (line 132-153) to use `switchProvider()` instead of `linkProvider()`
 - Keep `DELETE /api/auth/link/:provider` (line 156-162) with updated `unlinkProvider()` (no last-provider restriction)
 
-#### 2.5 Handle Login with Existing User (Decision Required)
-
-**File:** `sys/backend/api/src/services/auth.service.ts` - `upsertUser()` (line 365-390)
-
-Current behavior: If provider account doesn't exist, creates a **new user**. This means after disconnect + login with new provider, user loses their data.
-
-**Decision needed:** Should we match users by email when logging in with a new provider?
-
-- **Yes (Recommended):** Add email-based user lookup in `upsertUser()` to reconnect to existing account, preserving progress and settings
-- **No:** User starts fresh (simpler but loses data)
-
-```typescript
-// Email-based matching addition to upsertUser():
-private async upsertUser(provider: string, info: OAuthUserInfo) {
-  // 1. Check existing OAuth account
-  const existingAccount = await prisma.oAuthAccount.findUnique({
-    where: { provider_providerId: { provider, providerId: info.providerId } },
-    include: { user: true },
-  });
-  if (existingAccount) return existingAccount.user;
-
-  // 2. Match by email (reconnect to existing account after provider switch)
-  if (info.email) {
-    const existingUser = await prisma.user.findFirst({
-      where: { email: info.email },
-      include: { oauthAccounts: true },
-    });
-    if (existingUser && existingUser.oauthAccounts.length === 0) {
-      // User exists with no provider (disconnected) -> reconnect
-      await prisma.oAuthAccount.create({
-        data: { provider, providerId: info.providerId, userId: existingUser.id },
-      });
-      return existingUser;
-    }
-  }
-
-  // 3. Create new user
-  return prisma.user.create({
-    data: {
-      name: info.name,
-      email: info.email,
-      avatarUrl: info.avatarUrl,
-      oauthAccounts: {
-        create: { provider, providerId: info.providerId },
-      },
-    },
-  });
-}
-```
-
 ---
 
 ### Phase 3: Frontend Web - Single Provider UI
@@ -367,10 +317,7 @@ Note: This is a breaking change. Phase 5.1 must complete first.
 
 ## Open Questions
 
-1. **Email-based user matching:** When a user disconnects provider A and logs in with provider B, should we match by email to reconnect them to their existing account? Or treat them as a new user?
-   - Recommendation: Match by email to preserve user data (progress, settings)
-
-2. **Migration strategy:** For existing multi-provider users, keep first provider or let them choose?
+1. **Migration strategy:** For existing multi-provider users, keep first provider or let them choose?
    - Recommendation: Keep first provider (simplest, can be done automatically)
 
-3. **Grace period:** Should we give users a window to choose their preferred provider before auto-migration?
+2. **Grace period:** Should we give users a window to choose their preferred provider before auto-migration?

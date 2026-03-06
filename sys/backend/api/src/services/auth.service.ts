@@ -149,48 +149,48 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async linkProvider(
+  async switchProvider(
     userId: string,
-    provider: string,
+    newProvider: string,
     code: string,
     codeVerifier?: string,
   ): Promise<void> {
-    const userInfo = await this.getProviderUserInfo(provider, code, codeVerifier);
+    const userInfo = await this.getProviderUserInfo(newProvider, code, codeVerifier);
 
-    // Check if this provider account is already linked to another user
+    // Check if this provider account is already used by another user
     const existingAccount = await prisma.oAuthAccount.findUnique({
       where: {
-        provider_providerId: { provider, providerId: userInfo.providerId },
+        provider_providerId: { provider: newProvider, providerId: userInfo.providerId },
       },
     });
 
-    if (existingAccount) {
-      if (existingAccount.userId === userId) {
-        throw new AppError(400, 'This provider is already linked to your account');
-      }
+    if (existingAccount && existingAccount.userId !== userId) {
       throw new AppError(409, 'This provider account is already linked to another user');
     }
 
-    await prisma.oAuthAccount.create({
-      data: {
-        provider,
-        providerId: userInfo.providerId,
-        userId,
-      },
-    });
+    // Already linked to this user with same provider — nothing to do
+    if (existingAccount && existingAccount.userId === userId) {
+      return;
+    }
+
+    // Transaction: delete all current providers, create new one
+    await prisma.$transaction([
+      prisma.oAuthAccount.deleteMany({ where: { userId } }),
+      prisma.oAuthAccount.create({
+        data: {
+          provider: newProvider,
+          providerId: userInfo.providerId,
+          userId,
+        },
+      }),
+    ]);
   }
 
   async unlinkProvider(userId: string, provider: string): Promise<void> {
-    // Ensure the user has more than 1 provider linked
-    const accounts = await prisma.oAuthAccount.findMany({
-      where: { userId },
+    const account = await prisma.oAuthAccount.findFirst({
+      where: { userId, provider },
     });
 
-    if (accounts.length <= 1) {
-      throw new AppError(400, 'Cannot unlink the last provider. At least one provider must remain.');
-    }
-
-    const account = accounts.find((a) => a.provider === provider);
     if (!account) {
       throw new AppError(404, 'Provider not linked to this account');
     }

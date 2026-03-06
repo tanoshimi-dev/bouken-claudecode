@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useAppSelector } from '@/hooks/useAppSelector';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { clearUser } from '@/store/authSlice';
 import { apiClient } from '@/config/api';
 import { authService } from '@/services/auth.service';
 import Card from '@/components/common/Card';
 import { colors } from '@/theme/colors';
 import { spacing, borderRadius } from '@/theme/spacing';
 import { typography } from '@/theme/typography';
-import { ENV } from '@/config/env';
 import type { OAuthProvider } from '@learn-ai/shared-types';
 
 const allProviders: { id: OAuthProvider; label: string; color: string }[] = [
@@ -19,39 +20,13 @@ const allProviders: { id: OAuthProvider; label: string; color: string }[] = [
 ];
 
 export default function SettingsScreen() {
+  const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
   const linkedProviders = user?.providers ?? [];
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
 
-  const handleLink = async (provider: OAuthProvider) => {
-    setLoadingProvider(provider);
-    try {
-      // Link flow uses the same InAppBrowser approach but with the link endpoint
-      const { InAppBrowser } = await import('react-native-inappbrowser-reborn');
-      const url = `${ENV.API_URL}/api/auth/link/${provider}?platform=mobile`;
-
-      if (await InAppBrowser.isAvailable()) {
-        await InAppBrowser.openAuth(url, `${ENV.MOBILE_SCHEME}://auth/callback`, {
-          ephemeralWebSession: true,
-          showTitle: false,
-          enableUrlBarHiding: true,
-          enableDefaultShare: false,
-        });
-      }
-    } catch {
-      Alert.alert('Error', 'Failed to link provider.');
-    } finally {
-      setLoadingProvider(null);
-    }
-  };
-
   const handleUnlink = async (provider: OAuthProvider) => {
-    if (linkedProviders.length <= 1) {
-      Alert.alert('Cannot Unlink', 'You must have at least one linked provider.');
-      return;
-    }
-
-    Alert.alert('Unlink Provider', `Are you sure you want to unlink ${provider}?`, [
+    Alert.alert('Unlink Provider', 'Unlinking will log you out. Continue?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Unlink',
@@ -60,10 +35,10 @@ export default function SettingsScreen() {
           setLoadingProvider(provider);
           try {
             await apiClient.unlinkProvider(provider);
-            Alert.alert('Success', `${provider} has been unlinked.`);
+            await authService.clearTokens();
+            dispatch(clearUser());
           } catch {
             Alert.alert('Error', 'Failed to unlink provider.');
-          } finally {
             setLoadingProvider(null);
           }
         },
@@ -80,20 +55,32 @@ export default function SettingsScreen() {
 
       {allProviders.map(({ id, label, color }) => {
         const isLinked = linkedProviders.includes(id);
+        const hasLinkedProvider = linkedProviders.length > 0;
         return (
           <Card key={id} style={styles.providerCard}>
             <View style={styles.providerRow}>
               <View style={[styles.providerDot, { backgroundColor: color }]} />
               <Text style={styles.providerName}>{label}</Text>
-              <TouchableOpacity
-                style={isLinked ? styles.unlinkButton : styles.linkButton}
-                onPress={() => (isLinked ? handleUnlink(id) : handleLink(id))}
-                disabled={loadingProvider !== null}
-              >
-                <Text style={isLinked ? styles.unlinkText : styles.linkText}>
-                  {loadingProvider === id ? '...' : isLinked ? 'Unlink' : 'Link'}
-                </Text>
-              </TouchableOpacity>
+              {isLinked ? (
+                <TouchableOpacity
+                  style={styles.unlinkButton}
+                  onPress={() => handleUnlink(id)}
+                  disabled={loadingProvider !== null}
+                >
+                  <Text style={styles.unlinkText}>
+                    {loadingProvider === id ? '...' : 'Unlink'}
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={[styles.linkButton, hasLinkedProvider && styles.disabledButton]}
+                  disabled={hasLinkedProvider || loadingProvider !== null}
+                >
+                  <Text style={[styles.linkText, hasLinkedProvider && styles.disabledText]}>
+                    Link
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </Card>
         );
@@ -161,5 +148,11 @@ const styles = StyleSheet.create({
     ...typography.bodySmall,
     color: colors.error,
     fontWeight: '600',
+  },
+  disabledButton: {
+    opacity: 0.4,
+  },
+  disabledText: {
+    opacity: 0.6,
   },
 });
